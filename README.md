@@ -74,36 +74,3 @@ Launch the local development environment:
 npm run dev
 ```
 Open **[http://localhost:3000](http://localhost:3000)** in your browser.
-
----
-
-## 🧪 Verification Commands
-Ensure there are no errors before compiling:
-```bash
-# Prisma Schema validation
-npx prisma validate
-
-# TypeScript compilation
-npx tsc --noEmit
-
-# Code Linting
-npm run lint
-
-# Production Next.js Build
-npm run build
-```
-
----
-
-## ⏱️ 3-Minute Hackathon Demo Flow
-1.  **Monitor Operations (Fleet Manager)**:
-    *   Log in as `manager@transitops.com`.
-    *   Navigate the Fleet Dashboard, apply Gujarat regional filters, and examine the **Operations Control Center** alerts panel for expired licenses. Click "Take Action" to resolve.
-2.  **Dispatch Trip (Dispatcher)**:
-    *   Log in as `dispatcher@transitops.com`.
-    *   Navigate to Smart Dispatch. Create a new trip with a 650kg load. Try to select `Tata Ace Van-05` to observe the cargo weight rejection warning.
-    *   Adjust cargo weight to 400kg. Select "Use Recommendation" to pre-fill the form, then dispatch the trip. Verify both driver and vehicle status transition to `ON_TRIP`.
-3.  **Audit Financials (Financial Analyst)**:
-    *   Log in as `analyst@transitops.com`.
-    *   Open Finance Analytics. Audit the dynamic profitability table and verify the correct ROI calculations.
-    *   Go to Reports, select "Vehicle ROI Report", apply Gujarat regional filters, and hit "Download CSV" to verify exported data rows match the UI grid.
