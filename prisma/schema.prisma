@@ -8,6 +8,7 @@ datasource db {
 
 
 enum Role {
+  PENDING
   FLEET_MANAGER
   DISPATCHER
   SAFETY_OFFICER

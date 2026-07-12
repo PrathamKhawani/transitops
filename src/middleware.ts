@@ -13,6 +13,7 @@ const sessionOptions = {
 };
 
 const ROLE_REDIRECTS: Record<Role, string> = {
+  PENDING: "/pending",
   FLEET_MANAGER: "/fleet",
   DISPATCHER: "/dispatch",
   SAFETY_OFFICER: "/safety",
@@ -23,7 +24,28 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Allow public routes
-  if (pathname === "/login" || pathname.startsWith("/api/auth")) {
+  if (pathname === "/login" || pathname === "/pending" || pathname.startsWith("/api/auth")) {
+    // But if logged in and not pending, block /pending access
+    if (pathname === "/pending" || pathname === "/login") {
+      const session = await getIronSession<SessionData>(
+        request.cookies as unknown as {
+          get: (name: string) => { name: string; value: string } | undefined;
+          set: {
+            (name: string, value: string, cookie?: unknown): void;
+            (options: unknown): void;
+          };
+        },
+        sessionOptions
+      );
+      if (session.userId) {
+        if (session.role === "PENDING") {
+          if (pathname === "/login") return NextResponse.redirect(new URL("/pending", request.url));
+          return NextResponse.next();
+        } else {
+          return NextResponse.redirect(new URL(ROLE_REDIRECTS[session.role], request.url));
+        }
+      }
+    }
     return NextResponse.next();
   }
 
@@ -49,6 +71,14 @@ export async function middleware(request: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       return NextResponse.redirect(new URL("/login", request.url));
+    }
+
+    // Block PENDING users from operational routes/APIs
+    if (session.role === "PENDING") {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ error: "Forbidden. Awaiting Role Assignment." }, { status: 403 });
+      }
+      return NextResponse.redirect(new URL("/pending", request.url));
     }
 
     // Redirect root to role-specific dashboard

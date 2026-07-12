@@ -76,7 +76,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
 
   return (
     <aside
-      className="flex flex-col w-60 min-h-screen flex-shrink-0"
+      className="flex flex-col w-60 h-screen sticky top-0 flex-shrink-0"
       style={{ background: "#0f172a", borderRight: "1px solid #1e293b" }}
     >
       {/* Logo */}
@@ -102,7 +102,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-4 space-y-0.5">
+      <nav className="px-3 py-4 space-y-0.5 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href) && item.href !== navItems[0].href) || pathname === item.href;
           const Icon = item.icon;
@@ -124,37 +124,40 @@ export function AppSidebar({ user }: AppSidebarProps) {
         })}
       </nav>
 
-      {/* User */}
-      <div className="px-3 pb-2" style={{ borderTop: "1px solid #1e293b", paddingTop: "8px" }}>
-        <Link
-          href="/settings"
-          className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-          style={{ color: pathname === "/settings" ? "#f8fafc" : "#64748b", background: pathname === "/settings" ? "#1e293b" : "transparent" }}
-        >
-          <Settings className="w-4 h-4 flex-shrink-0" />
-          <span className="flex-1">Settings</span>
-          {pathname === "/settings" && <ChevronRight className="w-3 h-3" style={{ color: "#3b82f6" }} />}
-        </Link>
-      </div>
-      <div className="px-3 py-3" style={{ borderTop: "1px solid #1e293b" }}>
-        <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg" style={{ background: "#1e293b" }}>
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-            style={{ background: ROLE_COLORS[user.role] }}
+      {/* Bottom section with Settings & User/Logout */}
+      <div className="mt-auto">
+        {/* User */}
+        <div className="px-3 pb-2" style={{ borderTop: "1px solid #1e293b", paddingTop: "8px" }}>
+          <Link
+            href="/settings"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+            style={{ color: pathname === "/settings" ? "#f8fafc" : "#64748b", background: pathname === "/settings" ? "#1e293b" : "transparent" }}
           >
-            {user.name.charAt(0)}
+            <Settings className="w-4 h-4 flex-shrink-0" />
+            <span className="flex-1">Settings</span>
+            {pathname === "/settings" && <ChevronRight className="w-3 h-3" style={{ color: "#3b82f6" }} />}
+          </Link>
+        </div>
+        <div className="px-3 py-3" style={{ borderTop: "1px solid #1e293b" }}>
+          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg" style={{ background: "#1e293b" }}>
+            <div
+              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              style={{ background: ROLE_COLORS[user.role] }}
+            >
+              {user.name.charAt(0)}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-white truncate">{user.name}</p>
+              <p className="text-xs truncate" style={{ color: "#475569" }}>{user.email}</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="p-1 rounded hover:bg-red-500/20 transition-colors"
+              title="Logout"
+            >
+              <LogOut className="w-3.5 h-3.5" style={{ color: "#64748b" }} />
+            </button>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-medium text-white truncate">{user.name}</p>
-            <p className="text-xs truncate" style={{ color: "#475569" }}>{user.email}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="p-1 rounded hover:bg-red-500/20 transition-colors"
-            title="Logout"
-          >
-            <LogOut className="w-3.5 h-3.5" style={{ color: "#64748b" }} />
-          </button>
         </div>
       </div>
     </aside>

@@ -1,18 +1,15 @@
 import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { PageHeader } from "@/components/layout/AppHeader";
-import { KpiCard } from "@/components/shared/KpiCard";
 import { FleetFilters } from "@/components/shared/FleetFilters";
 import { OperationsControlCenter, OpsAlert } from "@/components/shared/OperationsControlCenter";
-import { Car, CheckCircle, Wrench, MapPin, Clock, Users, TrendingUp, AlertTriangle } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
-const STATUS_META: Record<string, { color: string; bg: string; label: string }> = {
-  AVAILABLE: { color: "#16a34a", bg: "#f0fdf4", label: "Available" },
-  ON_TRIP: { color: "#2563eb", bg: "#eff6ff", label: "On Trip" },
-  IN_SHOP: { color: "#d97706", bg: "#fffbeb", label: "In Shop" },
-  RETIRED: { color: "#94a3b8", bg: "#f8fafc", label: "Retired" },
+const STATUS_META: Record<string, { color: string; bg: string; label: string; dot: string }> = {
+  AVAILABLE: { color: "#16a34a", bg: "#f0fdf4", label: "Available", dot: "#22c55e" },
+  ON_TRIP: { color: "#2563eb", bg: "#eff6ff", label: "On Trip", dot: "#3b82f6" },
+  IN_SHOP: { color: "#d97706", bg: "#fffbeb", label: "In Shop", dot: "#f59e0b" },
+  RETIRED: { color: "#94a3b8", bg: "#f8fafc", label: "Retired", dot: "#cbd5e1" },
 };
 
 export default async function FleetDashboard(
@@ -31,7 +28,7 @@ export default async function FleetDashboard(
     totalVehicles, availableVehicles, onTripVehicles, inShopVehicles, retiredVehicles,
     activeTrips, draftTrips, availableDrivers, onTripDrivers,
     recentTrips, maintenanceAttention, recentVehicles,
-    expiredDrivers, suspendedDrivers, invalidTrips, expiringDrivers, 
+    expiredDrivers, suspendedDrivers, invalidTrips, expiringDrivers,
     allCompletedTrips, allFuel, allMaint, allVehs, longMaint
   ] = await Promise.all([
     prisma.vehicle.count({ where: { ...where, status: where.status ? where.status : { not: "RETIRED" } } }),
@@ -47,32 +44,19 @@ export default async function FleetDashboard(
       where: { status: { in: ["DISPATCHED", "COMPLETED", "DRAFT"] } },
       orderBy: { updatedAt: "desc" },
       take: 6,
-      include: {
-        vehicle: { select: { name: true } },
-        driver: { select: { name: true } },
-      },
+      include: { vehicle: { select: { name: true } }, driver: { select: { name: true } } },
     }),
-    // Vehicles with IN_PROGRESS maintenance (need attention)
     prisma.vehicle.findMany({
       where: { ...where, maintenanceLogs: { some: { status: "IN_PROGRESS" } } },
-      include: {
-        maintenanceLogs: {
-          where: { status: "IN_PROGRESS" },
-          orderBy: { startDate: "asc" },
-          take: 1,
-          select: { description: true, startDate: true, cost: true },
-        },
-      },
+      include: { maintenanceLogs: { where: { status: "IN_PROGRESS" }, orderBy: { startDate: "asc" }, take: 1, select: { description: true, startDate: true, cost: true } } },
       take: 5,
     }),
-    // Recent vehicles for status overview
     prisma.vehicle.findMany({
       where,
       orderBy: { updatedAt: "desc" },
       take: 8,
       select: { id: true, name: true, registrationNumber: true, type: true, status: true, region: true },
     }),
-    // OCC Data
     prisma.driver.findMany({ where: { licenseExpiryDate: { lt: new Date() } } }),
     prisma.driver.findMany({ where: { status: "SUSPENDED" } }),
     prisma.trip.findMany({ where: { status: "DISPATCHED" }, include: { vehicle: true, driver: true } }),
@@ -86,6 +70,7 @@ export default async function FleetDashboard(
 
   const fleetUtilization = totalVehicles > 0 ? Math.round((onTripVehicles / totalVehicles) * 100) : 0;
   const totalDrivers = availableDrivers + onTripDrivers;
+  const allVehiclesCount = availableVehicles + onTripVehicles + inShopVehicles + retiredVehicles;
 
   const statusCounts = [
     { status: "AVAILABLE", count: availableVehicles },
@@ -93,7 +78,6 @@ export default async function FleetDashboard(
     { status: "IN_SHOP", count: inShopVehicles },
     { status: "RETIRED", count: retiredVehicles },
   ];
-  const allVehiclesCount = availableVehicles + onTripVehicles + inShopVehicles + retiredVehicles;
 
   // Compute OCC Alerts
   const alerts: OpsAlert[] = [];
@@ -109,7 +93,7 @@ export default async function FleetDashboard(
   });
   expiringDrivers.forEach(d => alerts.push({ id: `exprng-drv-${d.id}`, severity: "WARNING", title: "License Expiring Soon", reason: "License expires within 30 days.", entity: d.name, href: "/safety/compliance" }));
   longMaint.forEach(m => alerts.push({ id: `lng-mnt-${m.id}`, severity: "WARNING", title: "Long-Running Maintenance", reason: "Vehicle in shop > 3 days.", entity: m.vehicle.name, href: "/fleet" }));
-  
+
   const roiMap = new Map<string, { acq: number, name: string, net: number }>();
   allVehs.forEach(v => roiMap.set(v.id, { acq: v.acquisitionCost, name: v.name, net: 0 }));
   allCompletedTrips.forEach(t => { const d = roiMap.get(t.vehicleId); if (d) d.net += t.revenue; });
@@ -127,164 +111,205 @@ export default async function FleetDashboard(
   const severityOrder = { CRITICAL: 0, WARNING: 1, INFO: 2 };
   alerts.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);
 
+  const tripStatusMeta: Record<string, { color: string; bg: string; label: string }> = {
+    DISPATCHED: { color: "#2563eb", bg: "#eff6ff", label: "Dispatched" },
+    COMPLETED: { color: "#16a34a", bg: "#f0fdf4", label: "Completed" },
+    DRAFT: { color: "#64748b", bg: "#f8fafc", label: "Draft" },
+    CANCELLED: { color: "#dc2626", bg: "#fef2f2", label: "Cancelled" },
+  };
+
   return (
-    <div className="p-6">
-      <PageHeader
-        title="Fleet Dashboard"
-        description="Real-time overview of your fleet operations"
-        breadcrumb="Fleet Manager"
-      />
+    <div className="min-h-screen" style={{ background: "#f0f4f8" }}>
+      {/* Hero Header */}
+      <div
+        className="relative overflow-hidden px-6 pt-8 pb-10"
+        style={{
+          background: "linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f2d4a 100%)",
+        }}
+      >
+        {/* Decorative orbs */}
+        <div className="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10 pointer-events-none" style={{ background: "radial-gradient(circle, #3b82f6, transparent)", transform: "translate(30%, -30%)" }} />
+        <div className="absolute bottom-0 left-1/2 w-64 h-64 rounded-full opacity-5 pointer-events-none" style={{ background: "radial-gradient(circle, #60a5fa, transparent)", transform: "translate(-50%, 50%)" }} />
 
-      <FleetFilters />
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full" style={{ background: "rgba(59,130,246,0.2)", color: "#60a5fa" }}>Fleet Manager</span>
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-1">Fleet Operations</h1>
+          <p className="text-sm" style={{ color: "#94a3b8" }}>Live vehicle status, utilization and operational health</p>
+        </div>
 
-      {/* Primary KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-        <KpiCard title="Active Vehicles" value={totalVehicles} subtitle="Excluding retired" icon={Car} iconColor="#2563eb" iconBg="#eff6ff" accent="#2563eb" />
-        <KpiCard title="Available" value={availableVehicles} subtitle="Ready to dispatch" icon={CheckCircle} iconColor="#16a34a" iconBg="#f0fdf4" accent="#22c55e" />
-        <KpiCard title="In Maintenance" value={inShopVehicles} subtitle="Currently in shop" icon={Wrench} iconColor="#ea580c" iconBg="#fff7ed" accent="#f97316" />
-        <KpiCard title="Fleet Utilization" value={`${fleetUtilization}%`} subtitle={`${onTripVehicles} on active trips`} icon={TrendingUp} iconColor="#7c3aed" iconBg="#faf5ff" accent="#8b5cf6" />
+        {/* KPI Hero Bar */}
+        <div className="relative mt-8 grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Active Vehicles", value: totalVehicles, sub: "Excluding retired", color: "#3b82f6", glow: "#3b82f620" },
+            { label: "Available Now", value: availableVehicles, sub: "Ready to dispatch", color: "#22c55e", glow: "#22c55e20" },
+            { label: "In Maintenance", value: inShopVehicles, sub: "Currently in shop", color: "#f97316", glow: "#f9731620" },
+            { label: "Fleet Utilization", value: `${fleetUtilization}%`, sub: `${onTripVehicles} on active trips`, color: "#a78bfa", glow: "#a78bfa20" },
+          ].map((kpi) => (
+            <div key={kpi.label} className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#94a3b8" }}>{kpi.label}</span>
+                <div className="w-2.5 h-2.5 rounded-full animate-pulse" style={{ background: kpi.color, boxShadow: `0 0 8px ${kpi.color}` }} />
+              </div>
+              <p className="text-3xl font-extrabold text-white">{kpi.value}</p>
+              <p className="text-xs mt-1" style={{ color: "#64748b" }}>{kpi.sub}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <KpiCard title="Active Trips" value={activeTrips} subtitle="Currently dispatched" icon={MapPin} iconColor="#0891b2" iconBg="#ecfeff" />
-        <KpiCard title="Pending Trips" value={draftTrips} subtitle="Awaiting dispatch" icon={Clock} iconColor="#b45309" iconBg="#fffbeb" />
-        <KpiCard title="Drivers On Duty" value={onTripDrivers} subtitle={`${availableDrivers} available`} icon={Users} iconColor="#15803d" iconBg="#f0fdf4" />
-        <KpiCard title="Total Drivers" value={totalDrivers} subtitle="Active roster" icon={Users} iconColor="#475569" iconBg="#f8fafc" />
-      </div>
+      <div className="px-6 py-6 space-y-5">
+        {/* Secondary KPIs */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Active Trips", value: activeTrips, sub: "Currently dispatched", accent: "#0891b2" },
+            { label: "Pending Trips", value: draftTrips, sub: "Awaiting dispatch", accent: "#b45309" },
+            { label: "Drivers On Duty", value: onTripDrivers, sub: `${availableDrivers} available`, accent: "#15803d" },
+            { label: "Total Drivers", value: totalDrivers, sub: "Active roster", accent: "#7c3aed" },
+          ].map((card) => (
+            <div key={card.label} className="bg-white rounded-2xl p-4" style={{ border: `1px solid #e2e8f0`, borderLeft: `4px solid ${card.accent}` }}>
+              <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#64748b" }}>{card.label}</p>
+              <p className="text-2xl font-bold" style={{ color: "#0f172a" }}>{card.value}</p>
+              <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>{card.sub}</p>
+            </div>
+          ))}
+        </div>
 
-      <div className="mb-6">
+        <FleetFilters />
+
+        {/* OCC */}
         <OperationsControlCenter alerts={alerts} />
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5">
-        {/* Vehicle Status Overview */}
-        <div className="bg-white rounded-xl" style={{ border: "1px solid #e2e8f0" }}>
-          <div className="px-5 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
-            <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Vehicle Status Overview</p>
-          </div>
-          <div className="p-5 space-y-3">
-            {statusCounts.map(({ status, count }) => {
-              const meta = STATUS_META[status] ?? { color: "#94a3b8", bg: "#f8fafc", label: status };
-              const pct = allVehiclesCount > 0 ? Math.round((count / allVehiclesCount) * 100) : 0;
-              return (
-                <div key={status}>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full" style={{ background: meta.color }} />
-                      <span className="text-xs font-medium" style={{ color: "#374151" }}>{meta.label}</span>
-                    </div>
-                    <span className="text-xs font-bold" style={{ color: "#0f172a" }}>{count} <span style={{ color: "#94a3b8" }}>({pct}%)</span></span>
-                  </div>
-                  <div className="h-1.5 rounded-full" style={{ background: "#f1f5f9" }}>
-                    <div className="h-1.5 rounded-full transition-all" style={{ background: meta.color, width: `${pct}%` }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-          {/* Recent vehicles mini-list */}
-          <div className="px-5 pb-4">
-            <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ color: "#94a3b8" }}>Recent Vehicles</p>
-            <div className="space-y-1.5">
-              {recentVehicles.slice(0, 5).map(v => {
-                const meta = STATUS_META[v.status] ?? STATUS_META.RETIRED;
+        {/* Bottom Panels */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+          {/* Vehicle Status Breakdown */}
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
+            <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <div>
+                <p className="text-sm font-bold text-slate-900">Status Breakdown</p>
+                <p className="text-xs text-slate-400 mt-0.5">Fleet distribution</p>
+              </div>
+              <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">{allVehiclesCount} total</span>
+            </div>
+            <div className="p-5 space-y-4">
+              {statusCounts.map(({ status, count }) => {
+                const meta = STATUS_META[status] ?? { color: "#94a3b8", bg: "#f8fafc", label: status, dot: "#94a3b8" };
+                const pct = allVehiclesCount > 0 ? Math.round((count / allVehiclesCount) * 100) : 0;
                 return (
-                  <div key={v.id} className="flex items-center justify-between py-1">
-                    <div>
-                      <p className="text-xs font-medium" style={{ color: "#0f172a" }}>{v.name}</p>
-                      <p className="text-xs" style={{ color: "#94a3b8" }}>{v.registrationNumber} · {v.region}</p>
+                  <div key={status}>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full" style={{ background: meta.dot }} />
+                        <span className="text-sm font-medium text-slate-700">{meta.label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-900">{count}</span>
+                        <span className="text-xs text-slate-400">({pct}%)</span>
+                      </div>
                     </div>
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span>
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-2 rounded-full transition-all duration-700" style={{ background: meta.color, width: `${pct}%` }} />
+                    </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-        </div>
-
-        {/* Maintenance Attention */}
-        <div className="bg-white rounded-xl" style={{ border: "1px solid #e2e8f0" }}>
-          <div className="px-5 py-4 flex items-center gap-2" style={{ borderBottom: "1px solid #f1f5f9" }}>
-            <AlertTriangle className="w-4 h-4" style={{ color: "#d97706" }} />
-            <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Maintenance Attention</p>
-            {inShopVehicles > 0 && (
-              <span className="ml-auto text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fff7ed", color: "#ea580c" }}>
-                {inShopVehicles} in shop
-              </span>
-            )}
-          </div>
-          <div className="divide-y" style={{ borderColor: "#f8fafc" }}>
-            {maintenanceAttention.length === 0 ? (
-              <div className="px-5 py-8 text-center">
-                <CheckCircle className="w-8 h-8 mx-auto mb-2" style={{ color: "#22c55e" }} />
-                <p className="text-sm font-medium" style={{ color: "#16a34a" }}>No active maintenance</p>
-                <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>All vehicles operational</p>
-              </div>
-            ) : (
-              maintenanceAttention.map(v => {
-                const log = v.maintenanceLogs[0];
-                return (
-                  <div key={v.id} className="px-5 py-3.5">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>{v.name}</p>
-                        <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>
-                          {log?.description?.substring(0, 40) ?? "Maintenance in progress"}
-                        </p>
-                        {log?.startDate && (
-                          <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>
-                            Since {formatDate(log.startDate)}
-                          </p>
-                        )}
+            <div className="px-5 pb-5">
+              <p className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Recent Vehicles</p>
+              <div className="space-y-2">
+                {recentVehicles.slice(0, 5).map(v => {
+                  const meta = STATUS_META[v.status] ?? STATUS_META.RETIRED;
+                  return (
+                    <div key={v.id} className="flex items-center justify-between py-1.5 px-3 rounded-xl" style={{ background: "#fafafa" }}>
+                      <div>
+                        <p className="text-xs font-semibold text-slate-800">{v.name}</p>
+                        <p className="text-xs text-slate-400">{v.registrationNumber} · {v.region}</p>
                       </div>
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded flex-shrink-0 ml-2" style={{ background: "#fff7ed", color: "#ea580c" }}>IN SHOP</span>
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: meta.bg, color: meta.color }}>{meta.label}</span>
                     </div>
-                  </div>
-                );
-              })
-            )}
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Recent Trip Activity */}
-        <div className="bg-white rounded-xl" style={{ border: "1px solid #e2e8f0" }}>
-          <div className="px-5 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
-            <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Recent Trip Activity</p>
-          </div>
-          <div className="divide-y" style={{ borderColor: "#f8fafc" }}>
-            {recentTrips.length === 0 ? (
-              <p className="px-5 py-8 text-center text-sm" style={{ color: "#94a3b8" }}>No recent trips</p>
-            ) : (
-              recentTrips.map(trip => {
-                const statusMeta: Record<string, { color: string; bg: string }> = {
-                  DISPATCHED: { color: "#2563eb", bg: "#eff6ff" },
-                  COMPLETED: { color: "#16a34a", bg: "#f0fdf4" },
-                  DRAFT: { color: "#64748b", bg: "#f8fafc" },
-                };
-                const meta = statusMeta[trip.status] ?? { color: "#94a3b8", bg: "#f8fafc" };
-                return (
-                  <div key={trip.id} className="px-5 py-3.5 flex items-center gap-3">
-                    <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: meta.bg }}>
-                      <MapPin className="w-3.5 h-3.5" style={{ color: meta.color }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: "#0f172a" }}>
-                        {trip.source} → {trip.destination}
-                      </p>
-                      <p className="text-xs truncate" style={{ color: "#64748b" }}>
-                        {trip.vehicle.name} · {trip.driver.name}
-                      </p>
-                    </div>
-                    <div className="text-right flex-shrink-0">
-                      <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ color: meta.color, background: meta.bg }}>
-                        {trip.status}
-                      </span>
-                      <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>{trip.tripCode}</p>
-                    </div>
+          {/* Maintenance Attention */}
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
+            <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <div>
+                <p className="text-sm font-bold text-slate-900">Maintenance Attention</p>
+                <p className="text-xs text-slate-400 mt-0.5">Vehicles in shop</p>
+              </div>
+              {inShopVehicles > 0 && (
+                <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ background: "#fff7ed", color: "#ea580c" }}>{inShopVehicles} in shop</span>
+              )}
+            </div>
+            <div className="divide-y divide-slate-50">
+              {maintenanceAttention.length === 0 ? (
+                <div className="px-5 py-12 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl">✅</span>
                   </div>
-                );
-              })
-            )}
+                  <p className="text-sm font-semibold text-green-600">All Clear</p>
+                  <p className="text-xs text-slate-400 mt-1">No active maintenance issues</p>
+                </div>
+              ) : (
+                maintenanceAttention.map(v => {
+                  const log = v.maintenanceLogs[0];
+                  return (
+                    <div key={v.id} className="px-5 py-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: "#fff7ed" }}>
+                          <span className="text-sm">🔧</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold text-slate-900">{v.name}</p>
+                          <p className="text-xs text-slate-500 mt-0.5 truncate">{log?.description?.substring(0, 45) ?? "Maintenance in progress"}</p>
+                          {log?.startDate && <p className="text-xs text-slate-400 mt-0.5">Since {formatDate(log.startDate)}</p>}
+                        </div>
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-full flex-shrink-0" style={{ background: "#fff7ed", color: "#ea580c" }}>IN SHOP</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Recent Trip Activity */}
+          <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
+            <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid #f1f5f9" }}>
+              <div>
+                <p className="text-sm font-bold text-slate-900">Recent Trip Activity</p>
+                <p className="text-xs text-slate-400 mt-0.5">Latest operations</p>
+              </div>
+              <a href="/fleet/vehicles" className="text-xs font-semibold text-blue-600 hover:text-blue-700">View fleet →</a>
+            </div>
+            <div className="divide-y divide-slate-50">
+              {recentTrips.length === 0 ? (
+                <p className="px-5 py-12 text-center text-sm text-slate-400">No recent trips</p>
+              ) : (
+                recentTrips.map(trip => {
+                  const meta = tripStatusMeta[trip.status] ?? { color: "#94a3b8", bg: "#f8fafc", label: trip.status };
+                  return (
+                    <div key={trip.id} className="px-5 py-3.5 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: meta.bg }}>
+                        <span className="text-xs">📍</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 truncate">{trip.source} → {trip.destination}</p>
+                        <p className="text-xs text-slate-500 truncate">{trip.vehicle.name} · {trip.driver.name}</p>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ color: meta.color, background: meta.bg }}>{meta.label}</span>
+                        <p className="text-xs text-slate-400 mt-0.5">{trip.tripCode}</p>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
           </div>
         </div>
       </div>

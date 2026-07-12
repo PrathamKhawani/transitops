@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/layout/AppHeader";
-import { DataTable } from "@/components/shared/DataTable";
+import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 
 export default async function DispatchVehiclesPage() {
@@ -14,12 +14,13 @@ export default async function DispatchVehiclesPage() {
     orderBy: { status: "asc" },
   });
 
-  const columns = [
+  const columns: Column<any>[] = [
     { key: "registrationNumber", label: "Reg. Number", sortable: true },
     { key: "name", label: "Name", sortable: true },
     { key: "model", label: "Model" },
     { key: "type", label: "Type" },
     { key: "maximumLoadCapacity", label: "Max Load", render: (v: unknown) => `${v}T` },
+    { key: "odometer", label: "Odometer", render: (v: unknown) => `${v} km` },
     { key: "region", label: "Region" },
     { key: "status", label: "Status", render: (v: unknown) => <StatusBadge status={v as string} /> },
   ];

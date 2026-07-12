@@ -17,9 +17,9 @@ export default async function DashboardLayout({
   };
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen overflow-hidden">
       <AppSidebar user={user} />
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ background: "#f1f5f9" }}>
+      <main className="flex-1 overflow-y-auto" style={{ background: "#f0f4f8" }}>
         {children}
       </main>
     </div>
