@@ -82,21 +82,36 @@ export default function FleetDriversPage() {
     setSubmitting(false);
   }
 
-  const tableData = drivers.map((d) => ({
-    ...d,
-    _actions: (
-      <button onClick={(e) => { e.stopPropagation(); openEdit(d); }} className="p-1.5 rounded hover:bg-blue-50" title="Edit status">
-        <Edit2 className="w-3.5 h-3.5 text-blue-500" />
-      </button>
-    ),
-  })) as unknown as Record<string, unknown>[];
+  const columnsWithActions: Column<Record<string, unknown>>[] = [
+    ...columns,
+    {
+      key: "_actions",
+      label: "",
+      className: "w-16",
+      render: (_, row) => {
+        const d = row as unknown as Driver;
+        return (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              openEdit(d);
+            }}
+            className="p-1.5 rounded hover:bg-blue-50"
+            title="Edit status"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-blue-500" />
+          </button>
+        );
+      },
+    },
+  ];
 
   return (
     <div className="p-6">
       <PageHeader title="Drivers" description="View fleet drivers and license status" breadcrumb="Fleet Manager" />
       <DataTable
-        columns={[...columns, { key: "_actions", label: "", className: "w-16" }]}
-        data={tableData}
+        columns={columnsWithActions}
+        data={drivers as unknown as Record<string, unknown>[]}
         loading={loading}
         searchPlaceholder="Search drivers..."
         filters={

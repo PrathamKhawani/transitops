@@ -5,8 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Truck, LayoutDashboard, Car, Users, MapPin, Wrench,
-  ShieldCheck, DollarSign, Fuel, Receipt, LogOut, ChevronRight,
-  Zap, BarChart2, FileDown, Settings
+  ShieldCheck, DollarSign, Fuel, Receipt, LogOut,
+  Zap, BarChart3, FileDown, Settings, ChevronRight,
+  Activity, TrendingUp
 } from "lucide-react";
 import { Role } from "@prisma/client";
 
@@ -14,49 +15,110 @@ interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
+  badge?: string;
 }
 
-const NAV_BY_ROLE: Record<Role, NavItem[]> = {
+interface NavGroup {
+  groupLabel?: string;
+  items: NavItem[];
+}
+
+const NAV_BY_ROLE: Record<Role, NavGroup[]> = {
   FLEET_MANAGER: [
-    { label: "Dashboard", href: "/fleet", icon: LayoutDashboard },
-    { label: "Vehicles", href: "/fleet/vehicles", icon: Car },
-    { label: "Maintenance", href: "/fleet/maintenance", icon: Wrench },
-    { label: "Drivers", href: "/fleet/drivers", icon: Users },
+    {
+      items: [
+        { label: "Dashboard", href: "/fleet", icon: LayoutDashboard },
+      ]
+    },
+    {
+      groupLabel: "Fleet",
+      items: [
+        { label: "Vehicles", href: "/fleet/vehicles", icon: Car },
+        { label: "Maintenance", href: "/fleet/maintenance", icon: Wrench },
+        { label: "Drivers", href: "/fleet/drivers", icon: Users },
+      ]
+    }
   ],
   DISPATCHER: [
-    { label: "Dashboard", href: "/dispatch", icon: LayoutDashboard },
-    { label: "Smart Dispatch", href: "/dispatch/smart-dispatch", icon: Zap },
-    { label: "Trips", href: "/dispatch/trips", icon: MapPin },
-    { label: "Vehicles", href: "/dispatch/vehicles", icon: Car },
-    { label: "Drivers", href: "/dispatch/drivers", icon: Users },
+    {
+      items: [
+        { label: "Dashboard", href: "/dispatch", icon: LayoutDashboard },
+      ]
+    },
+    {
+      groupLabel: "Operations",
+      items: [
+        { label: "Smart Dispatch", href: "/dispatch/smart-dispatch", icon: Zap },
+        { label: "Trips", href: "/dispatch/trips", icon: MapPin },
+        { label: "Vehicles", href: "/dispatch/vehicles", icon: Car },
+        { label: "Drivers", href: "/dispatch/drivers", icon: Users },
+      ]
+    }
   ],
   SAFETY_OFFICER: [
-    { label: "Dashboard", href: "/safety", icon: LayoutDashboard },
-    { label: "Drivers", href: "/safety/drivers", icon: Users },
-    { label: "Compliance", href: "/safety/compliance", icon: ShieldCheck },
+    {
+      items: [
+        { label: "Dashboard", href: "/safety", icon: LayoutDashboard },
+      ]
+    },
+    {
+      groupLabel: "Compliance",
+      items: [
+        { label: "Drivers", href: "/safety/drivers", icon: Users },
+        { label: "Compliance", href: "/safety/compliance", icon: ShieldCheck },
+      ]
+    }
   ],
   FINANCIAL_ANALYST: [
-    { label: "Dashboard", href: "/finance", icon: LayoutDashboard },
-    { label: "Analytics", href: "/finance/analytics", icon: BarChart2 },
-    { label: "Reports", href: "/finance/reports", icon: FileDown },
-    { label: "Fuel Logs", href: "/finance/fuel", icon: Fuel },
-    { label: "Expenses", href: "/finance/expenses", icon: Receipt },
-    { label: "Revenue", href: "/finance/revenue", icon: DollarSign },
+    {
+      items: [
+        { label: "Dashboard", href: "/finance", icon: LayoutDashboard },
+      ]
+    },
+    {
+      groupLabel: "Finance",
+      items: [
+        { label: "Analytics", href: "/finance/analytics", icon: BarChart3 },
+        { label: "Reports", href: "/finance/reports", icon: FileDown },
+        { label: "Fuel Logs", href: "/finance/fuel", icon: Fuel },
+        { label: "Expenses", href: "/finance/expenses", icon: Receipt },
+        { label: "Revenue", href: "/finance/revenue", icon: DollarSign },
+      ]
+    }
   ],
+  PENDING: [],
 };
 
-const ROLE_LABELS: Record<Role, string> = {
-  FLEET_MANAGER: "Fleet Manager",
-  DISPATCHER: "Dispatcher",
-  SAFETY_OFFICER: "Safety Officer",
-  FINANCIAL_ANALYST: "Financial Analyst",
-};
-
-const ROLE_COLORS: Record<Role, string> = {
-  FLEET_MANAGER: "#3b82f6",
-  DISPATCHER: "#10b981",
-  SAFETY_OFFICER: "#f59e0b",
-  FINANCIAL_ANALYST: "#8b5cf6",
+const ROLE_CONFIG: Record<Role, {
+  label: string;
+  color: string;
+  icon: React.ElementType;
+}> = {
+  FLEET_MANAGER: {
+    label: "Fleet Manager",
+    color: "#3B82F6",
+    icon: Car,
+  },
+  DISPATCHER: {
+    label: "Dispatcher",
+    color: "#10B981",
+    icon: Activity,
+  },
+  SAFETY_OFFICER: {
+    label: "Safety Officer",
+    color: "#F59E0B",
+    icon: ShieldCheck,
+  },
+  FINANCIAL_ANALYST: {
+    label: "Financial Analyst",
+    color: "#06B6D4",
+    icon: TrendingUp,
+  },
+  PENDING: {
+    label: "Pending Approval",
+    color: "#71717A",
+    icon: LayoutDashboard,
+  },
 };
 
 interface AppSidebarProps {
@@ -66,7 +128,8 @@ interface AppSidebarProps {
 export function AppSidebar({ user }: AppSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const navItems = NAV_BY_ROLE[user.role] || [];
+  const navGroups = NAV_BY_ROLE[user.role] || [];
+  const roleConfig = ROLE_CONFIG[user.role];
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -74,88 +137,272 @@ export function AppSidebar({ user }: AppSidebarProps) {
     router.push("/login");
   }
 
+  const isActive = (href: string, isFirst: boolean) => {
+    if (pathname === href) return true;
+    if (isFirst) return false;
+    return pathname.startsWith(href) && href !== "/";
+  };
+
   return (
     <aside
-      className="flex flex-col w-60 h-screen sticky top-0 flex-shrink-0"
-      style={{ background: "#0f172a", borderRight: "1px solid #1e293b" }}
+      style={{
+        width: 260,
+        height: "100vh",
+        position: "sticky",
+        top: 0,
+        display: "flex",
+        flexDirection: "column",
+        background: "#09090B",
+        borderRight: "1px solid rgba(255,255,255,0.06)",
+        flexShrink: 0,
+      }}
     >
-      {/* Logo */}
-      <div className="px-5 py-5 flex items-center gap-2.5" style={{ borderBottom: "1px solid #1e293b" }}>
-        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: "#2563eb" }}>
-          <Truck className="w-4 h-4 text-white" />
-        </div>
-        <div>
-          <p className="text-sm font-bold text-white leading-tight">TransitOps</p>
-          <p className="text-xs" style={{ color: "#475569" }}>Operations Platform</p>
-        </div>
-      </div>
-
-      {/* Role Badge */}
-      <div className="px-5 py-3" style={{ borderBottom: "1px solid #1e293b" }}>
-        <div
-          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium"
-          style={{ background: ROLE_COLORS[user.role] + "20", color: ROLE_COLORS[user.role] }}
-        >
-          <div className="w-1.5 h-1.5 rounded-full" style={{ background: ROLE_COLORS[user.role] }} />
-          {ROLE_LABELS[user.role]}
-        </div>
-      </div>
-
-      {/* Nav */}
-      <nav className="px-3 py-4 space-y-0.5 overflow-y-auto">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href) && item.href !== navItems[0].href) || pathname === item.href;
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors group"
+      {/* ─── Logo ─── */}
+      <div
+        style={{
+          padding: "20px 20px 16px",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 8,
+              background: "#FFFFFF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Truck style={{ width: 16, height: 16, color: "#09090B" }} />
+          </div>
+          <div>
+            <div
               style={{
-                color: isActive ? "#f8fafc" : "#64748b",
-                background: isActive ? "#1e293b" : "transparent",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "#FFFFFF",
+                letterSpacing: "-0.02em",
+                lineHeight: 1,
               }}
             >
-              <Icon className="w-4 h-4 flex-shrink-0" />
-              <span className="flex-1">{item.label}</span>
-              {isActive && <ChevronRight className="w-3 h-3" style={{ color: "#3b82f6" }} />}
-            </Link>
-          );
-        })}
+              TransitOps
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: "#52525B",
+                marginTop: 2,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {roleConfig.label}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Navigation ─── */}
+      <nav
+        style={{
+          flex: 1,
+          padding: "12px 12px",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
+        {navGroups.map((group, gi) => (
+          <div key={gi}>
+            {group.groupLabel && (
+              <p
+                style={{
+                  fontSize: 11,
+                  fontWeight: 500,
+                  letterSpacing: "0.04em",
+                  textTransform: "uppercase",
+                  color: "#3F3F46",
+                  padding: "0 10px",
+                  marginBottom: 4,
+                }}
+              >
+                {group.groupLabel}
+              </p>
+            )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+              {group.items.map((item, ii) => {
+                const active = isActive(item.href, gi === 0 && ii === 0);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className="nav-item"
+                    style={{
+                      color: active ? "#FFFFFF" : "#71717A",
+                      background: active ? "rgba(255,255,255,0.08)" : "transparent",
+                    }}
+                  >
+                    {active && (
+                      <span
+                        style={{
+                          position: "absolute",
+                          left: 0,
+                          top: "50%",
+                          transform: "translateY(-50%)",
+                          width: 2,
+                          height: 16,
+                          borderRadius: "0 2px 2px 0",
+                          background: "#3B82F6",
+                        }}
+                      />
+                    )}
+                    <Icon
+                      style={{
+                        width: 15,
+                        height: 15,
+                        color: active ? "#FFFFFF" : "#52525B",
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span style={{ fontSize: 13, fontWeight: active ? 500 : 400 }}>
+                      {item.label}
+                    </span>
+                    {item.badge && (
+                      <span
+                        style={{
+                          fontSize: 10,
+                          fontWeight: 500,
+                          padding: "1px 6px",
+                          borderRadius: 100,
+                          background: "rgba(59,130,246,0.15)",
+                          color: "#60A5FA",
+                          marginLeft: "auto",
+                        }}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </nav>
 
-      {/* Bottom section with Settings & User/Logout */}
-      <div className="mt-auto">
-        {/* User */}
-        <div className="px-3 pb-2" style={{ borderTop: "1px solid #1e293b", paddingTop: "8px" }}>
+      {/* ─── Bottom ─── */}
+      <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        {/* Settings */}
+        <div style={{ padding: "8px 12px 0" }}>
           <Link
             href="/settings"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-            style={{ color: pathname === "/settings" ? "#f8fafc" : "#64748b", background: pathname === "/settings" ? "#1e293b" : "transparent" }}
+            className="nav-item"
+            style={{
+              color: pathname === "/settings" ? "#FFFFFF" : "#71717A",
+              background: pathname === "/settings" ? "rgba(255,255,255,0.08)" : "transparent",
+            }}
           >
-            <Settings className="w-4 h-4 flex-shrink-0" />
-            <span className="flex-1">Settings</span>
-            {pathname === "/settings" && <ChevronRight className="w-3 h-3" style={{ color: "#3b82f6" }} />}
+            <Settings
+              style={{
+                width: 15,
+                height: 15,
+                color: pathname === "/settings" ? "#FFFFFF" : "#52525B",
+                flexShrink: 0,
+              }}
+            />
+            <span style={{ fontSize: 13 }}>Settings</span>
           </Link>
         </div>
-        <div className="px-3 py-3" style={{ borderTop: "1px solid #1e293b" }}>
-          <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg" style={{ background: "#1e293b" }}>
+
+        {/* User */}
+        <div style={{ padding: "8px 12px 12px" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              padding: "10px 10px",
+              borderRadius: 8,
+              background: "rgba(255,255,255,0.03)",
+              border: "1px solid rgba(255,255,255,0.06)",
+            }}
+          >
+            {/* Avatar */}
             <div
-              className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-              style={{ background: ROLE_COLORS[user.role] }}
+              style={{
+                width: 28,
+                height: 28,
+                borderRadius: 6,
+                background: "#27272A",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#A1A1AA",
+                fontSize: 11,
+                fontWeight: 600,
+                flexShrink: 0,
+              }}
             >
-              {user.name.charAt(0)}
+              {user.name.charAt(0).toUpperCase()}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-white truncate">{user.name}</p>
-              <p className="text-xs truncate" style={{ color: "#475569" }}>{user.email}</p>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p
+                style={{
+                  fontSize: 12,
+                  fontWeight: 500,
+                  color: "#E4E4E7",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  lineHeight: 1,
+                }}
+              >
+                {user.name}
+              </p>
+              <p
+                style={{
+                  fontSize: 11,
+                  color: "#52525B",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                  marginTop: 2,
+                  lineHeight: 1,
+                }}
+              >
+                {user.email}
+              </p>
             </div>
+
             <button
               onClick={handleLogout}
-              className="p-1 rounded hover:bg-red-500/20 transition-colors"
+              style={{
+                width: 24,
+                height: 24,
+                borderRadius: 5,
+                background: "transparent",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+                transition: "background 0.15s ease",
+              }}
               title="Logout"
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.12)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = "transparent";
+              }}
             >
-              <LogOut className="w-3.5 h-3.5" style={{ color: "#64748b" }} />
+              <LogOut style={{ width: 13, height: 13, color: "#71717A" }} />
             </button>
           </div>
         </div>

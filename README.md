@@ -6,7 +6,7 @@ TransitOps replaces complex, error-prone spreadsheets with a real-time, consolid
 ---
 
 ## 🛠️ Tech Stack
-*   **Framework**: Next.js 16 App Router (with Turbopack support)
+*   **Framework**: Next.js 15 App Router (with Turbopack support)
 *   **Database ORM**: Prisma 7 (connected to PostgreSQL)
 *   **Security & Auth**: Role-Based Access Control (RBAC) powered by `iron-session`
 *   **Analytics Visualization**: Recharts (fully dynamic dashboard plotting)
@@ -42,6 +42,19 @@ TransitOps replaces complex, error-prone spreadsheets with a real-time, consolid
 *   Monitors license status (Valid, Expiring Soon, Expired).
 *   Enforces chronological sorting of compliance issues so Safety Officers address critical risks first.
 *   Tracks individual safety scores and total trip completion percentages.
+
+---
+
+## 🔑 Demo Credentials
+
+To test the role-based access control matrix, you can log in as any of the following seeded user profiles. Use the universal password: **`demo1234`**
+
+| Operational Role | Email Address | Assigned Name | Primary Dashboard Views |
+| :--- | :--- | :--- | :--- |
+| **Fleet Manager** | `fleet@transitops.in` | Arjun Mehta | Fleet Dashboard, Vehicle & Driver Roster, Role Approvals |
+| **Dispatcher** | `dispatch@transitops.in` | Priya Sharma | Smart Dispatch Command, Route Operations, Trip Creation |
+| **Safety Officer** | `safety@transitops.in` | Rajesh Patel | Safety Overview, Driver Status, Compliance Audit Roster |
+| **Financial Analyst** | `finance@transitops.in` | Kavya Desai | Finance Overview, Cost Breakdown, Revenue Charts |
 
 ---
 

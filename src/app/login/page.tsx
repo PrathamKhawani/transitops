@@ -2,299 +2,607 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { Truck, Eye, EyeOff, ChevronRight } from "lucide-react";
+import { Eye, EyeOff, Truck, LogIn, UserPlus, ArrowRight, CheckCircle2 } from "lucide-react";
 
-const DEMO_ACCOUNTS = [
-  { role: "Fleet Manager", email: "fleet@transitops.in", password: "demo1234", color: "bg-blue-500" },
-  { role: "Dispatcher", email: "dispatch@transitops.in", password: "demo1234", color: "bg-emerald-500" },
-  { role: "Safety Officer", email: "safety@transitops.in", password: "demo1234", color: "bg-amber-500" },
-  { role: "Financial Analyst", email: "finance@transitops.in", password: "demo1234", color: "bg-violet-500" },
+const FEATURES = [
+  { icon: "🚌", title: "Real-time Fleet Management", desc: "Track every vehicle across your entire fleet instantly" },
+  { icon: "⚡", title: "Smart Dispatch & Routing",  desc: "AI-powered trip assignment and optimization" },
+  { icon: "🛡",  title: "Safety & Compliance",       desc: "Automated license tracking and violation alerts" },
+  { icon: "📊", title: "Financial Intelligence",     desc: "Revenue, cost and ROI analytics in one view" },
 ];
 
 export default function LoginPage() {
   const router = useRouter();
+  const [isRegister, setIsRegister] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [isRegister, setIsRegister] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
-
     try {
       if (isRegister) {
+        if (password !== confirmPassword) {
+          setError("Passwords do not match.");
+          setLoading(false);
+          return;
+        }
         const res = await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name, email, password, confirmPassword }),
         });
-
         const data = await res.json();
-
-        if (!res.ok) {
-          setError(data.error || "Registration failed");
-          return;
-        }
-
-        toast.success("Account created successfully! Please sign in.");
+        if (!res.ok) { setError(data.error || "Registration failed"); setLoading(false); return; }
+        setSuccess("Account created! Sign in to continue.");
         setIsRegister(false);
-        setPassword("");
-        setConfirmPassword("");
+        setName(""); setPassword(""); setConfirmPassword("");
       } else {
         const res = await fetch("/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ email, password }),
         });
-
         const data = await res.json();
-
-        if (!res.ok) {
-          setError(data.error || "Login failed");
-          return;
-        }
-
-        toast.success(`Welcome back, ${data.user.name}!`);
-        router.push(data.redirect);
+        if (!res.ok) { setError(data.error || "Login failed"); setLoading(false); return; }
+        router.push(data.redirect || "/");
       }
     } catch {
-      setError("Network error. Please try again.");
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
   }
 
-  function fillCredentials(email: string, password: string) {
-    setEmail(email);
-    setPassword(password);
-    setIsRegister(false);
+  function switchMode(val: boolean) {
+    setIsRegister(val);
     setError("");
+    setSuccess("");
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: "#f1f5f9" }}>
-      {/* Left Panel */}
-      <div className="hidden lg:flex lg:w-[520px] xl:w-[580px] flex-col justify-between p-12" style={{ background: "#0f172a" }}>
-        <div>
-          <div className="flex items-center gap-3 mb-16">
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: "#2563eb" }}>
-              <Truck className="w-5 h-5 text-white" />
+    <div
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        background: "#FAFAFA",
+        fontFamily: "'Inter', system-ui, sans-serif",
+      }}
+    >
+      {/* ═══════════════════════════════════════
+          LEFT PANEL — Brand Showcase
+      ═══════════════════════════════════════ */}
+      <div
+        className="hidden md:flex"
+        style={{
+          width: 440,
+          flexShrink: 0,
+          flexDirection: "column",
+          justifyContent: "space-between",
+          padding: "44px 44px 40px",
+          background: "linear-gradient(135deg, #09090B 0%, #18181B 50%, #09090B 100%)",
+          position: "relative",
+          overflow: "hidden",
+          borderRight: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
+        {/* Dot grid texture */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px)",
+            backgroundSize: "26px 26px",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Subtle glow */}
+        <div
+          style={{
+            position: "absolute",
+            top: -120,
+            right: -80,
+            width: 400,
+            height: 400,
+            borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(59,130,246,0.06), transparent 70%)",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* Logo */}
+        <div style={{ position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 52 }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 8,
+                background: "#FFFFFF",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Truck style={{ width: 18, height: 18, color: "#09090B" }} />
             </div>
-            <span className="text-white font-semibold text-lg tracking-tight">TransitOps</span>
+            <div>
+              <div
+                style={{
+                  fontSize: 18,
+                  fontWeight: 600,
+                  color: "#FFFFFF",
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1,
+                }}
+              >
+                TransitOps
+              </div>
+              <div
+                style={{
+                  fontSize: 10,
+                  color: "#71717A",
+                  letterSpacing: "0.05em",
+                  textTransform: "uppercase",
+                  marginTop: 2,
+                }}
+              >
+                Operations Platform
+              </div>
+            </div>
           </div>
 
-          <h1 className="text-3xl font-bold text-white mb-4 leading-tight">
-            Smart Transport<br />Operations Platform
+          {/* Tagline */}
+          <h1
+            style={{
+              fontSize: 28,
+              fontWeight: 700,
+              color: "#FFFFFF",
+              letterSpacing: "-0.03em",
+              lineHeight: 1.2,
+              marginBottom: 14,
+            }}
+          >
+            Fleet Intelligence<br />
+            <span style={{ color: "#3B82F6" }}>at Your Fingertips</span>
           </h1>
-          <p className="text-base leading-relaxed" style={{ color: "#94a3b8" }}>
-            Replace spreadsheets with real-time fleet visibility, automated scheduling, and compliance tracking.
+          <p
+            style={{
+              fontSize: 13,
+              color: "#71717A",
+              lineHeight: 1.6,
+              marginBottom: 44,
+              maxWidth: 320,
+            }}
+          >
+            Manage vehicles, dispatch trips, monitor safety and track finances — all in one unified B2B platform.
           </p>
 
-          <div className="mt-12 space-y-4">
-            {[
-              { label: "Vehicle & Driver Management", desc: "Schedule vehicles, track maintenance, manage fleet capacity" },
-              { label: "Trip Dispatch & Tracking", desc: "Create trips, dispatch vehicles, track real-time progress" },
-              { label: "Safety & Compliance", desc: "Monitor licenses, safety scores, and regulatory compliance" },
-              { label: "Financial Analytics", desc: "Track fuel costs, expenses, revenue, and ROI" },
-            ].map((item) => (
-              <div key={item.label} className="flex items-start gap-3">
-                <div className="w-5 h-5 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0" style={{ background: "#1e3a5f" }}>
-                  <div className="w-1.5 h-1.5 rounded-full" style={{ background: "#3b82f6" }} />
+          {/* Features */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {FEATURES.map(({ icon, title, desc }) => (
+              <div key={title} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: "rgba(255,255,255,0.05)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 14,
+                    flexShrink: 0,
+                    marginTop: 1,
+                  }}
+                >
+                  {icon}
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-white">{item.label}</p>
-                  <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>{item.desc}</p>
+                  <p
+                    style={{
+                      fontSize: 13,
+                      fontWeight: 500,
+                      color: "#E4E4E7",
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    {title}
+                  </p>
+                  <p style={{ fontSize: 11.5, color: "#71717A", marginTop: 2, lineHeight: 1.5 }}>
+                    {desc}
+                  </p>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        <p className="text-xs" style={{ color: "#334155" }}>
-          © 2024 TransitOps · Indian Logistics Platform
+        {/* Footer */}
+        <p
+          style={{
+            position: "relative",
+            fontSize: 11,
+            color: "#52525B",
+            letterSpacing: "0.02em",
+          }}
+        >
+          © {new Date().getFullYear()} TransitOps · Enterprise Fleet Solutions
         </p>
       </div>
 
-      {/* Right Panel */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md">
+      {/* ═══════════════════════════════════════
+          RIGHT PANEL — Auth Form
+      ═══════════════════════════════════════ */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "32px 24px",
+        }}
+      >
+        <div style={{ width: "100%", maxWidth: 380 }}>
+
           {/* Mobile logo */}
-          <div className="flex items-center gap-2 mb-8 lg:hidden">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#2563eb" }}>
-              <Truck className="w-4 h-4 text-white" />
+          <div
+            style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 28 }}
+            className="flex md:hidden"
+          >
+            <div
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 8,
+                background: "#09090B",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Truck style={{ width: 18, height: 18, color: "#FFFFFF" }} />
             </div>
-            <span className="font-semibold text-lg" style={{ color: "#0f172a" }}>TransitOps</span>
+            <span style={{ fontSize: 17, fontWeight: 600, color: "#09090B", letterSpacing: "-0.02em" }}>
+              TransitOps
+            </span>
           </div>
 
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold" style={{ color: "#0f172a" }}>
-              {isRegister ? "Create your account" : "Sign in"}
-            </h2>
-            <p className="text-sm mt-1" style={{ color: "#64748b" }}>
-              {isRegister
-                ? "Register a new account to await role assignment"
-                : "Enter your credentials to access the platform"}
-            </p>
-          </div>
-
-          {/* Demo Accounts */}
-          {!isRegister && (
-            <div className="mb-6 p-4 rounded-xl border" style={{ background: "#f8fafc", borderColor: "#e2e8f0" }}>
-              <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#64748b" }}>
-                Demo Accounts — click to fill
-              </p>
-              <div className="grid grid-cols-2 gap-2">
-                {DEMO_ACCOUNTS.map((acc) => (
+          {/* Card */}
+          <div
+            style={{
+              background: "#FFFFFF",
+              borderRadius: 16,
+              padding: "32px",
+              boxShadow: "var(--shadow-md)",
+              border: "1px solid #E4E4E7",
+            }}
+          >
+            {/* Tab switcher */}
+            <div
+              style={{
+                display: "flex",
+                background: "#F4F4F5",
+                borderRadius: 8,
+                padding: 3,
+                marginBottom: 24,
+                border: "1px solid #E4E4E7",
+              }}
+            >
+              {[
+                { label: "Sign In", icon: LogIn, val: false },
+                { label: "Register", icon: UserPlus, val: true },
+              ].map(({ label, icon: Icon, val }) => {
+                const active = isRegister === val;
+                return (
                   <button
-                    key={acc.email}
-                    onClick={() => fillCredentials(acc.email, acc.password)}
-                    className="flex items-center gap-2 p-2.5 rounded-lg border text-left hover:border-blue-300 hover:bg-blue-50 transition-colors group"
-                    style={{ borderColor: "#e2e8f0", background: "white" }}
+                    key={label}
+                    type="button"
+                    onClick={() => switchMode(val)}
+                    style={{
+                      flex: 1,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 6,
+                      padding: "8px 0",
+                      borderRadius: 6,
+                      fontSize: 13,
+                      fontWeight: 500,
+                      background: active ? "#FFFFFF" : "transparent",
+                      color: active ? "#09090B" : "#71717A",
+                      border: "none",
+                      cursor: "pointer",
+                      boxShadow: active ? "var(--shadow-xs)" : "none",
+                      transition: "all 0.15s ease",
+                      fontFamily: "inherit",
+                      letterSpacing: "-0.01em",
+                    }}
                   >
-                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${acc.color}`} />
-                    <div>
-                      <p className="text-xs font-medium" style={{ color: "#0f172a" }}>{acc.role}</p>
-                      <p className="text-xs" style={{ color: "#94a3b8" }}>demo1234</p>
-                    </div>
+                    <Icon style={{ width: 13, height: 13 }} />
+                    {label}
                   </button>
-                ))}
-              </div>
+                );
+              })}
             </div>
-          )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Title */}
+            <div style={{ marginBottom: 20 }}>
+              <h2
+                style={{
+                  fontSize: 20,
+                  fontWeight: 600,
+                  color: "#09090B",
+                  letterSpacing: "-0.02em",
+                  marginBottom: 4,
+                }}
+              >
+                {isRegister ? "Create Account" : "Welcome back"}
+              </h2>
+              <p style={{ fontSize: 13, color: "#71717A" }}>
+                {isRegister
+                  ? "Register to request access to TransitOps"
+                  : "Enter your credentials to access the platform"}
+              </p>
+            </div>
+
+            {/* Alerts */}
             {error && (
-              <div className="p-3 rounded-lg text-sm" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
+              <div
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  fontSize: 12.5,
+                  background: "#FEF2F2",
+                  color: "#DC2626",
+                  border: "1px solid #FEE2E2",
+                  marginBottom: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  fontWeight: 500,
+                }}
+              >
+                <span style={{ fontSize: 14 }}>⚠</span>
                 {error}
               </div>
             )}
-
-            {isRegister && (
-              <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: "#374151" }}>
-                  Full Name
-                </label>
-                <input
-                  id="name"
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  placeholder="John Doe"
-                  className="w-full px-3.5 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-                  style={{ borderColor: "#d1d5db", background: "white", color: "#0f172a" }}
-                />
+            {success && (
+              <div
+                style={{
+                  padding: "10px 12px",
+                  borderRadius: 8,
+                  fontSize: 12.5,
+                  background: "#ECFDF5",
+                  color: "#059669",
+                  border: "1px solid #D1FAE5",
+                  marginBottom: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  fontWeight: 500,
+                }}
+              >
+                <CheckCircle2 style={{ width: 14, height: 14, flexShrink: 0 }} />
+                {success}
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "#374151" }}>
-                Email address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="you@company.com"
-                className="w-full px-3.5 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-                style={{ borderColor: "#d1d5db", background: "white", color: "#0f172a" }}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium mb-1.5" style={{ color: "#374151" }}>
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow pr-10"
-                  style={{ borderColor: "#d1d5db", background: "white", color: "#0f172a" }}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5"
-                  style={{ color: "#9ca3af" }}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
-            </div>
-
-            {isRegister && (
-              <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: "#374151" }}>
-                  Confirm Password
-                </label>
-                <input
-                  id="confirmPassword"
-                  type={showPassword ? "text" : "password"}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  placeholder="••••••••"
-                  className="w-full px-3.5 py-2.5 rounded-lg border text-sm outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-shadow"
-                  style={{ borderColor: "#d1d5db", background: "white", color: "#0f172a" }}
-                />
-              </div>
-            )}
-
-            <button
-              id="login-submit"
-              type="submit"
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white transition-colors disabled:opacity-60"
-              style={{ background: loading ? "#93c5fd" : "#2563eb" }}
+            {/* Form */}
+            <form
+              onSubmit={handleSubmit}
+              style={{ display: "flex", flexDirection: "column", gap: 14 }}
             >
-              {loading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  {isRegister ? "Creating account..." : "Signing in..."}
-                </>
-              ) : (
-                <>
-                  {isRegister ? "Register" : "Sign in"} <ChevronRight className="w-4 h-4" />
-                </>
+              {isRegister && (
+                <div>
+                  <label style={labelStyle}>Full Name</label>
+                  <input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    placeholder="Your full name"
+                    className="input-field"
+                    style={inputStyle}
+                  />
+                </div>
               )}
-            </button>
-          </form>
 
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => {
-                setIsRegister(!isRegister);
-                setError("");
-                setPassword("");
-                setConfirmPassword("");
+              <div>
+                <label style={labelStyle}>Email Address</label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="you@company.com"
+                  className="input-field"
+                  style={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label style={labelStyle}>Password</label>
+                <div style={{ position: "relative" }}>
+                  <input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    className="input-field"
+                    style={{ ...inputStyle, paddingRight: 40 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    style={{
+                      position: "absolute",
+                      right: 11,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      color: "#A1A1AA",
+                      padding: 2,
+                      display: "flex",
+                    }}
+                  >
+                    {showPassword
+                      ? <EyeOff style={{ width: 14, height: 14 }} />
+                      : <Eye style={{ width: 14, height: 14 }} />}
+                  </button>
+                </div>
+              </div>
+
+              {isRegister && (
+                <div>
+                  <label style={labelStyle}>Confirm Password</label>
+                  <input
+                    id="confirmPassword"
+                    type={showPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    className="input-field"
+                    style={inputStyle}
+                  />
+                </div>
+              )}
+
+              <button
+                id="auth-submit"
+                type="submit"
+                disabled={loading}
+                style={{
+                  width: "100%",
+                  padding: "10px 16px",
+                  borderRadius: 8,
+                  marginTop: 4,
+                  background: loading ? "#71717A" : "#18181B",
+                  color: "#FFFFFF",
+                  fontSize: 13,
+                  fontWeight: 500,
+                  border: "none",
+                  cursor: loading ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  boxShadow: "var(--shadow-xs)",
+                  transition: "all 0.15s ease",
+                  fontFamily: "inherit",
+                  letterSpacing: "-0.01em",
+                }}
+              >
+                {loading ? (
+                  <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span
+                      style={{
+                        width: 12,
+                        height: 12,
+                        borderRadius: "50%",
+                        border: "2px solid rgba(255,255,255,0.3)",
+                        borderTopColor: "white",
+                        display: "inline-block",
+                        animation: "spin 0.7s linear infinite",
+                      }}
+                    />
+                    {isRegister ? "Creating account..." : "Signing in..."}
+                  </span>
+                ) : (
+                  <>
+                    {isRegister ? "Create Account" : "Sign In"}
+                    <ArrowRight style={{ width: 13, height: 13 }} />
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Switch mode */}
+            <p
+              style={{
+                textAlign: "center",
+                marginTop: 18,
+                fontSize: 13,
+                color: "#71717A",
               }}
-              className="text-sm font-medium text-blue-600 hover:underline"
             >
-              {isRegister ? "Already have an account? Sign in" : "Don't have an account? Sign up"}
-            </button>
+              {isRegister ? "Already have an account? " : "Don't have an account? "}
+              <button
+                type="button"
+                onClick={() => switchMode(!isRegister)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "#2563EB",
+                  fontWeight: 600,
+                  fontSize: 13,
+                  fontFamily: "inherit",
+                  textDecoration: "underline",
+                  textUnderlineOffset: "2px",
+                }}
+              >
+                {isRegister ? "Sign In" : "Register"}
+              </button>
+            </p>
           </div>
 
-          {!isRegister && (
-            <p className="text-xs text-center mt-6" style={{ color: "#9ca3af" }}>
-              All demo accounts use password: <span className="font-mono font-semibold" style={{ color: "#6b7280" }}>demo1234</span>
-            </p>
-          )}
+          {/* Footer note */}
+          <p
+            style={{
+              textAlign: "center",
+              marginTop: 20,
+              fontSize: 11,
+              color: "#A1A1AA",
+            }}
+          >
+            🔒 Secure · Role-based access control
+          </p>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 }
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: 12,
+  fontWeight: 500,
+  color: "#71717A",
+  marginBottom: 5,
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "8px 12px",
+  borderRadius: 8,
+  background: "#FFFFFF",
+  color: "#09090B",
+  fontSize: 13,
+  border: "1px solid #E4E4E7",
+  outline: "none",
+  boxSizing: "border-box",
+  transition: "all 0.15s ease",
+  fontFamily: "'Inter', sans-serif",
+};

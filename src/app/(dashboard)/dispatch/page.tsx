@@ -1,7 +1,6 @@
 import { requireAuth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { StatusBadge } from "@/components/shared/StatusBadge";
 import { formatDate } from "@/lib/utils";
 
 export default async function DispatchDashboard() {
@@ -11,135 +10,265 @@ export default async function DispatchDashboard() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const [activeTrips, draftTrips, availableVehicles, availableDrivers, completedToday, recentTrips] = await Promise.all([
-    prisma.trip.count({ where: { status: "DISPATCHED" } }),
-    prisma.trip.count({ where: { status: "DRAFT" } }),
-    prisma.vehicle.count({ where: { status: "AVAILABLE" } }),
-    prisma.driver.count({ where: { status: "AVAILABLE" } }),
-    prisma.trip.count({ where: { status: "COMPLETED", completedAt: { gte: today } } }),
-    prisma.trip.findMany({
-      orderBy: { updatedAt: "desc" },
-      take: 8,
-      include: {
-        vehicle: { select: { name: true, registrationNumber: true } },
-        driver: { select: { name: true } },
-      },
-    }),
-  ]);
+  const [activeTrips, draftTrips, availableVehicles, availableDrivers, completedToday, recentTrips] =
+    await Promise.all([
+      prisma.trip.count({ where: { status: "DISPATCHED" } }),
+      prisma.trip.count({ where: { status: "DRAFT" } }),
+      prisma.vehicle.count({ where: { status: "AVAILABLE" } }),
+      prisma.driver.count({ where: { status: "AVAILABLE" } }),
+      prisma.trip.count({ where: { status: "COMPLETED", completedAt: { gte: today } } }),
+      prisma.trip.findMany({
+        orderBy: { updatedAt: "desc" },
+        take: 8,
+        include: {
+          vehicle: { select: { name: true, registrationNumber: true } },
+          driver: { select: { name: true } },
+        },
+      }),
+    ]);
 
-  const tripStatusMeta: Record<string, { color: string; bg: string; label: string }> = {
-    DISPATCHED: { color: "#2563eb", bg: "#eff6ff", label: "Dispatched" },
-    COMPLETED: { color: "#16a34a", bg: "#f0fdf4", label: "Completed" },
-    DRAFT: { color: "#64748b", bg: "#f8fafc", label: "Draft" },
-    CANCELLED: { color: "#dc2626", bg: "#fef2f2", label: "Cancelled" },
+  const statusConfig: Record<string, { color: string; bg: string; label: string; dot: string; border: string }> = {
+    DISPATCHED: { color: "#1D4ED8", bg: "#EFF6FF", label: "Dispatched", dot: "#3B82F6", border: "#DBEAFE" },
+    COMPLETED:  { color: "#059669", bg: "#ECFDF5", label: "Completed",  dot: "#10B981", border: "#D1FAE5" },
+    DRAFT:      { color: "#52525B", bg: "#F4F4F5", label: "Draft",      dot: "#A1A1AA", border: "#E4E4E7" },
+    CANCELLED:  { color: "#DC2626", bg: "#FEF2F2", label: "Cancelled",  dot: "#EF4444", border: "#FEE2E2" },
   };
 
+  const kpis = [
+    { label: "Active Trips",      value: activeTrips,       sub: "Currently dispatched", accent: "#3B82F6" },
+    { label: "Draft Trips",       value: draftTrips,        sub: "Pending dispatch",      accent: "#F59E0B" },
+    { label: "Vehicles Ready",    value: availableVehicles, sub: "Available to assign",   accent: "#10B981" },
+    { label: "Drivers Available", value: availableDrivers,  sub: "On standby",            accent: "#06B6D4" },
+    { label: "Completed Today",   value: completedToday,    sub: "Since midnight",        accent: "#8B5CF6" },
+  ];
+
+  const quickActions = [
+    { label: "Create Trip",    href: "/dispatch/trips",         icon: "➕", color: "#3B82F6" },
+    { label: "Smart Dispatch", href: "/dispatch/smart-dispatch", icon: "⚡", color: "#8B5CF6" },
+    { label: "Vehicles",       href: "/dispatch/vehicles",       icon: "🚗", color: "#10B981" },
+    { label: "Drivers",        href: "/dispatch/drivers",        icon: "👤", color: "#F59E0B" },
+  ];
+
   return (
-    <div className="min-h-screen" style={{ background: "#f0f4f8" }}>
-      {/* Hero Header */}
-      <div
-        className="relative overflow-hidden px-6 pt-8 pb-10"
-        style={{ background: "linear-gradient(135deg, #0a2540 0%, #1a4060 50%, #0d3254 100%)" }}
-      >
-        <div className="absolute top-0 right-0 w-80 h-80 rounded-full opacity-10 pointer-events-none" style={{ background: "radial-gradient(circle, #10b981, transparent)", transform: "translate(20%, -20%)" }} />
-        <div className="absolute bottom-0 left-1/3 w-56 h-56 rounded-full opacity-5 pointer-events-none" style={{ background: "radial-gradient(circle, #34d399, transparent)", transform: "translateY(50%)" }} />
+    <div style={{ minHeight: "100vh", background: "#FAFAFA" }}>
+
+      {/* ═══ HEADER ═══ */}
+      <div className="hero-banner" style={{ paddingBottom: 40 }}>
+        <div className="absolute pointer-events-none"
+          style={{ top: -120, right: -60, width: 280, height: 280, borderRadius: "50%",
+            background: "radial-gradient(circle, rgba(16,185,129,0.1), transparent 70%)" }} />
 
         <div className="relative">
-          <span className="text-xs font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full mb-3 inline-block" style={{ background: "rgba(16,185,129,0.2)", color: "#34d399" }}>Dispatcher</span>
-          <h1 className="text-3xl font-bold text-white mb-1">Dispatch Command</h1>
-          <p className="text-sm" style={{ color: "#94a3b8" }}>Manage and monitor all trip operations in real-time</p>
+          <p style={{ fontSize: 11, color: "#71717A", marginBottom: 20, letterSpacing: "0.02em" }}>
+            {new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })}
+          </p>
+          <h1 style={{ fontSize: 24, fontWeight: 600, color: "#FFFFFF", letterSpacing: "-0.025em", lineHeight: 1.2, marginBottom: 4 }}>
+            Dispatch Command
+          </h1>
+          <p style={{ fontSize: 14, color: "#71717A" }}>
+            Monitor, assign and manage all trip operations
+          </p>
         </div>
 
-        {/* KPI Hero Bar */}
-        <div className="relative mt-8 grid grid-cols-2 lg:grid-cols-5 gap-4">
-          {[
-            { label: "Active Trips", value: activeTrips, color: "#3b82f6", emoji: "🚛" },
-            { label: "Draft Trips", value: draftTrips, color: "#f59e0b", emoji: "📋" },
-            { label: "Avail. Vehicles", value: availableVehicles, color: "#22c55e", emoji: "🚗" },
-            { label: "Avail. Drivers", value: availableDrivers, color: "#a78bfa", emoji: "👤" },
-            { label: "Completed Today", value: completedToday, color: "#06b6d4", emoji: "✅" },
-          ].map((kpi) => (
-            <div key={kpi.label} className="rounded-2xl p-4" style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#94a3b8" }}>{kpi.label}</span>
-                <span className="text-base">{kpi.emoji}</span>
-              </div>
-              <p className="text-3xl font-extrabold text-white">{kpi.value}</p>
+        {/* Hero KPIs */}
+        <div className="relative stagger" style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+          {kpis.map((kpi, i) => (
+            <div
+              key={kpi.label}
+              className="card-glass animate-fade-in-up"
+              style={{ padding: "14px 16px", animationDelay: `${i * 40}ms` }}
+            >
+              <p style={{ fontSize: 10, fontWeight: 500, color: "#71717A", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
+                {kpi.label}
+              </p>
+              <p style={{ fontSize: 26, fontWeight: 700, color: "#FFFFFF", letterSpacing: "-0.04em", lineHeight: 1 }}>
+                {kpi.value}
+              </p>
+              <p style={{ fontSize: 11, marginTop: 6, color: "#52525B" }}>
+                {kpi.sub}
+              </p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="px-6 py-6 space-y-5">
+      {/* ═══ CONTENT ═══ */}
+      <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: "Create New Trip", href: "/dispatch/trips", icon: "➕", color: "#3b82f6", bg: "#eff6ff" },
-            { label: "Smart Dispatch", href: "/dispatch/smart-dispatch", icon: "⚡", color: "#7c3aed", bg: "#faf5ff" },
-            { label: "View Vehicles", href: "/dispatch/vehicles", icon: "🚗", color: "#16a34a", bg: "#f0fdf4" },
-            { label: "View Drivers", href: "/dispatch/drivers", icon: "👤", color: "#d97706", bg: "#fffbeb" },
-          ].map((action) => (
-            <a
-              key={action.label}
-              href={action.href}
-              className="flex items-center gap-3 bg-white rounded-2xl px-5 py-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
-              style={{ border: "1px solid #e2e8f0" }}
-            >
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl" style={{ background: action.bg }}>
-                {action.icon}
-              </div>
-              <span className="text-sm font-semibold text-slate-800">{action.label}</span>
-            </a>
-          ))}
+        <div>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
+            Quick Actions
+          </p>
+          <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+            {quickActions.map((action, i) => (
+              <a
+                key={action.label}
+                href={action.href}
+                className="card animate-fade-in-up hover-action-card"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: "14px 16px",
+                  textDecoration: "none",
+                  animationDelay: `${i * 40}ms`,
+                  ["--hover-border" as any]: `${action.color}30`,
+                  ["--hover-shadow" as any]: `0 4px 12px ${action.color}15`,
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 9,
+                    background: `${action.color}10`,
+                    border: `1px solid ${action.color}20`,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: 16,
+                    flexShrink: 0,
+                  }}
+                >
+                  {action.icon}
+                </div>
+                <div>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: "#18181B", letterSpacing: "-0.01em" }}>
+                    {action.label}
+                  </p>
+                  <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 1 }}>Open →</p>
+                </div>
+              </a>
+            ))}
+          </div>
         </div>
 
-        {/* Trips Table */}
-        <div className="bg-white rounded-2xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
-          <div className="px-6 py-5 flex items-center justify-between" style={{ borderBottom: "1px solid #f1f5f9" }}>
+        {/* Recent Trips */}
+        <div className="card" style={{ overflow: "hidden" }}>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "14px 18px",
+              borderBottom: "1px solid #E4E4E7",
+            }}
+          >
             <div>
-              <h2 className="text-base font-bold text-slate-900">Recent Trips</h2>
-              <p className="text-xs text-slate-400 mt-0.5">All trip activity across the fleet</p>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Recent Trips</p>
+              <p style={{ fontSize: 12, marginTop: 2, color: "#A1A1AA" }}>Latest trip activity</p>
             </div>
-            <a href="/dispatch/trips" className="text-sm font-semibold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-              View all trips <span>→</span>
+            <a href="/dispatch/trips" className="btn btn-blue-soft btn-sm">
+              View all →
             </a>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr style={{ background: "#f8fafc", borderBottom: "1px solid #f1f5f9" }}>
-                  {["Trip Code", "Route", "Vehicle", "Driver", "Status", "Date"].map((h) => (
-                    <th key={h} className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: "#64748b" }}>{h}</th>
+                <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #E4E4E7" }}>
+                  {["Trip Code", "Route", "Vehicle", "Driver", "Status", "Date"].map(h => (
+                    <th
+                      key={h}
+                      style={{
+                        padding: "10px 16px",
+                        textAlign: "left",
+                        fontSize: 11,
+                        fontWeight: 600,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.06em",
+                        color: "#A1A1AA",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {recentTrips.map((trip, i) => {
-                  const meta = tripStatusMeta[trip.status] ?? { color: "#94a3b8", bg: "#f8fafc", label: trip.status };
+                  const meta = statusConfig[trip.status] ?? statusConfig.DRAFT;
                   return (
-                    <tr key={trip.id} className="hover:bg-slate-50 transition-colors" style={{ borderBottom: i < recentTrips.length - 1 ? "1px solid #f8fafc" : "none" }}>
-                      <td className="px-5 py-3.5">
-                        <span className="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded">{trip.tripCode}</span>
+                    <tr
+                      key={trip.id}
+                      className="table-row-hover"
+                      style={{ borderBottom: i < recentTrips.length - 1 ? "1px solid #F4F4F5" : "none" }}
+                    >
+                      <td style={{ padding: "12px 16px" }}>
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 500,
+                            fontFamily: "monospace",
+                            padding: "2px 8px",
+                            borderRadius: 6,
+                            background: "#F4F4F5",
+                            color: "#3F3F46",
+                            border: "1px solid #E4E4E7",
+                          }}
+                        >
+                          {trip.tripCode}
+                        </span>
                       </td>
-                      <td className="px-5 py-3.5 text-sm font-medium text-slate-800">{trip.source} → {trip.destination}</td>
-                      <td className="px-5 py-3.5">
-                        <div>
-                          <p className="text-sm text-slate-700">{trip.vehicle.name}</p>
-                          <p className="text-xs text-slate-400">{trip.vehicle.registrationNumber}</p>
+                      <td style={{ padding: "12px 16px" }}>
+                        <p style={{ fontSize: 13, fontWeight: 500, color: "#18181B" }}>
+                          {trip.source} → {trip.destination}
+                        </p>
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <p style={{ fontSize: 13, color: "#3F3F46" }}>{trip.vehicle.name}</p>
+                        <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 1 }}>{trip.vehicle.registrationNumber}</p>
+                      </td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div
+                            style={{
+                              width: 24,
+                              height: 24,
+                              borderRadius: 6,
+                              background: "#27272A",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "#E4E4E7",
+                              fontSize: 10,
+                              fontWeight: 600,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {trip.driver.name.charAt(0)}
+                          </div>
+                          <span style={{ fontSize: 13, color: "#3F3F46" }}>{trip.driver.name}</span>
                         </div>
                       </td>
-                      <td className="px-5 py-3.5 text-sm text-slate-700">{trip.driver.name}</td>
-                      <td className="px-5 py-3.5">
-                        <span className="text-xs font-bold px-2.5 py-1 rounded-full" style={{ color: meta.color, background: meta.bg }}>{meta.label}</span>
+                      <td style={{ padding: "12px 16px" }}>
+                        <span
+                          className="chip"
+                          style={{
+                            fontSize: 10,
+                            background: meta.bg,
+                            color: meta.color,
+                            border: `1px solid ${meta.border}`,
+                            fontWeight: 500,
+                          }}
+                        >
+                          <span style={{ width: 5, height: 5, borderRadius: "50%", background: meta.dot, display: "inline-block" }} />
+                          {meta.label}
+                        </span>
                       </td>
-                      <td className="px-5 py-3.5 text-xs text-slate-400">{formatDate(trip.createdAt)}</td>
+                      <td style={{ padding: "12px 16px" }}>
+                        <p style={{ fontSize: 12, color: "#A1A1AA" }}>{formatDate(trip.createdAt)}</p>
+                      </td>
                     </tr>
                   );
                 })}
                 {recentTrips.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-5 py-12 text-center text-sm text-slate-400">No trips found. Create your first trip!</td>
+                    <td colSpan={6} style={{ padding: "56px 16px", textAlign: "center" }}>
+                      <p style={{ fontSize: 13, color: "#A1A1AA" }}>No trips found. Create your first trip to get started.</p>
+                    </td>
                   </tr>
                 )}
               </tbody>

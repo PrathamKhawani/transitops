@@ -1,18 +1,25 @@
-import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/layout/AppHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
+import { formatNumber } from "@/lib/utils";
 
-export default async function DispatchVehiclesPage() {
-  const session = await requireAuth();
-  if (!session || session.role !== "DISPATCHER") redirect("/login");
+export default function DispatchVehiclesPage() {
+  const [vehicles, setVehicles] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const vehicles = await prisma.vehicle.findMany({
-    where: { status: { not: "RETIRED" } },
-    orderBy: { status: "asc" },
-  });
+  useEffect(() => {
+    fetch("/api/vehicles")
+      .then((res) => res.json())
+      .then((data) => {
+        // Filter out RETIRED
+        const active = Array.isArray(data) ? data.filter((v: any) => v.status !== "RETIRED") : [];
+        setVehicles(active);
+        setLoading(false);
+      });
+  }, []);
 
   const columns: Column<any>[] = [
     { key: "registrationNumber", label: "Reg. Number", sortable: true },
@@ -20,7 +27,7 @@ export default async function DispatchVehiclesPage() {
     { key: "model", label: "Model" },
     { key: "type", label: "Type" },
     { key: "maximumLoadCapacity", label: "Max Load", render: (v: unknown) => `${v}T` },
-    { key: "odometer", label: "Odometer", render: (v: unknown) => `${v} km` },
+    { key: "odometer", label: "Odometer", render: (v: unknown) => `${formatNumber(v as number)} km` },
     { key: "region", label: "Region" },
     { key: "status", label: "Status", render: (v: unknown) => <StatusBadge status={v as string} /> },
   ];
@@ -28,7 +35,7 @@ export default async function DispatchVehiclesPage() {
   return (
     <div className="p-6">
       <PageHeader title="Vehicle Availability" description="Check which vehicles are available for dispatch" breadcrumb="Dispatcher" />
-      <DataTable columns={columns} data={vehicles as unknown as Record<string, unknown>[]} searchPlaceholder="Search vehicles..." />
+      <DataTable loading={loading} columns={columns} data={vehicles as unknown as Record<string, unknown>[]} searchPlaceholder="Search vehicles..." />
     </div>
   );
 }

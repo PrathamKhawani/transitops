@@ -8,45 +8,45 @@ import { toast } from "sonner";
 const RBAC_MATRIX = [
   {
     resource: "Fleet & Vehicles",
-    FLEET_MANAGER: { level: "Full Access", color: "#16a34a", desc: "CRUD, retire, status" },
-    DISPATCHER: { level: "View + Dispatch", color: "#2563eb", desc: "View, assign to trips" },
-    SAFETY_OFFICER: { level: "View Only", color: "#64748b", desc: "Read vehicle info" },
-    FINANCIAL_ANALYST: { level: "View Only", color: "#64748b", desc: "Read for cost analysis" },
+    FLEET_MANAGER: { level: "Full Access", color: "#10B981", desc: "CRUD, retire, status" },
+    DISPATCHER: { level: "View + Dispatch", color: "#3B82F6", desc: "View, assign to trips" },
+    SAFETY_OFFICER: { level: "View Only", color: "#71717A", desc: "Read vehicle info" },
+    FINANCIAL_ANALYST: { level: "View Only", color: "#71717A", desc: "Read for cost analysis" },
   },
   {
     resource: "Drivers",
-    FLEET_MANAGER: { level: "Full Access", color: "#16a34a", desc: "CRUD, status changes" },
-    DISPATCHER: { level: "View + Assign", color: "#2563eb", desc: "View, assign to trips" },
-    SAFETY_OFFICER: { level: "Full Access", color: "#16a34a", desc: "Safety scores, suspend" },
-    FINANCIAL_ANALYST: { level: "View Only", color: "#64748b", desc: "Driver roster view" },
+    FLEET_MANAGER: { level: "Full Access", color: "#10B981", desc: "CRUD, status changes" },
+    DISPATCHER: { level: "View + Assign", color: "#3B82F6", desc: "View, assign to trips" },
+    SAFETY_OFFICER: { level: "Full Access", color: "#10B981", desc: "Safety scores, suspend" },
+    FINANCIAL_ANALYST: { level: "View Only", color: "#71717A", desc: "Driver roster view" },
   },
   {
     resource: "Trips",
-    FLEET_MANAGER: { level: "View Only", color: "#64748b", desc: "Read trip data" },
-    DISPATCHER: { level: "Full Access", color: "#16a34a", desc: "Create, dispatch, complete, cancel" },
-    SAFETY_OFFICER: { level: "View Only", color: "#64748b", desc: "Trip compliance view" },
-    FINANCIAL_ANALYST: { level: "View + Revenue", color: "#2563eb", desc: "Revenue, distance data" },
+    FLEET_MANAGER: { level: "View Only", color: "#71717A", desc: "Read trip data" },
+    DISPATCHER: { level: "Full Access", color: "#10B981", desc: "Create, dispatch, complete, cancel" },
+    SAFETY_OFFICER: { level: "View Only", color: "#71717A", desc: "Trip compliance view" },
+    FINANCIAL_ANALYST: { level: "View + Revenue", color: "#3B82F6", desc: "Revenue, distance data" },
   },
   {
     resource: "Maintenance",
-    FLEET_MANAGER: { level: "Full Access", color: "#16a34a", desc: "Schedule, start, complete, cancel" },
-    DISPATCHER: { level: "View Only", color: "#64748b", desc: "Check maintenance status" },
-    SAFETY_OFFICER: { level: "View Only", color: "#64748b", desc: "Safety-related maintenance" },
-    FINANCIAL_ANALYST: { level: "View + Cost", color: "#2563eb", desc: "Cost tracking" },
+    FLEET_MANAGER: { level: "Full Access", color: "#10B981", desc: "Schedule, start, complete, cancel" },
+    DISPATCHER: { level: "View Only", color: "#71717A", desc: "Check maintenance status" },
+    SAFETY_OFFICER: { level: "View Only", color: "#71717A", desc: "Safety-related maintenance" },
+    FINANCIAL_ANALYST: { level: "View + Cost", color: "#3B82F6", desc: "Cost tracking" },
   },
   {
     resource: "Fuel & Expenses",
-    FLEET_MANAGER: { level: "View Only", color: "#64748b", desc: "Operational view" },
-    DISPATCHER: { level: "Record Fuel", color: "#2563eb", desc: "Log fuel for active trips" },
-    SAFETY_OFFICER: { level: "View Only", color: "#64748b", desc: "Read only" },
-    FINANCIAL_ANALYST: { level: "Full Access", color: "#16a34a", desc: "CRUD, all expense types" },
+    FLEET_MANAGER: { level: "View Only", color: "#71717A", desc: "Operational view" },
+    DISPATCHER: { level: "Record Fuel", color: "#3B82F6", desc: "Log fuel for active trips" },
+    SAFETY_OFFICER: { level: "View Only", color: "#71717A", desc: "Read only" },
+    FINANCIAL_ANALYST: { level: "Full Access", color: "#10B981", desc: "CRUD, all expense types" },
   },
   {
     resource: "Analytics & Reports",
-    FLEET_MANAGER: { level: "View Only", color: "#64748b", desc: "Fleet metrics" },
-    DISPATCHER: { level: "View Only", color: "#64748b", desc: "Dispatch metrics" },
-    SAFETY_OFFICER: { level: "View Only", color: "#64748b", desc: "Safety metrics" },
-    FINANCIAL_ANALYST: { level: "Full Access", color: "#16a34a", desc: "All analytics, CSV export" },
+    FLEET_MANAGER: { level: "View Only", color: "#71717A", desc: "Fleet metrics" },
+    DISPATCHER: { level: "View Only", color: "#71717A", desc: "Dispatch metrics" },
+    SAFETY_OFFICER: { level: "View Only", color: "#71717A", desc: "Safety metrics" },
+    FINANCIAL_ANALYST: { level: "Full Access", color: "#10B981", desc: "All analytics, CSV export" },
   },
 ];
 
@@ -59,7 +59,7 @@ const ROLE_LABELS: Record<Role, string> = {
 };
 const ROLES: Role[] = ["FLEET_MANAGER", "DISPATCHER", "SAFETY_OFFICER", "FINANCIAL_ANALYST"];
 
-const DEFAULTS = { company: "TransitOps Gujarat Logistics", currency: "INR (₹)", distanceUnit: "Kilometers" };
+const DEFAULTS = { company: "TransitOps Gujarat Depot", currency: "INR (₹)", distanceUnit: "Kilometers" };
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState(DEFAULTS);
@@ -86,8 +86,7 @@ export default function SettingsPage() {
       if (stored) setSettings(JSON.parse(stored));
     } catch { /* ignore */ }
 
-    // Fetch user session
-    fetch("/api/auth/logout") // GET method retrieves session
+    fetch("/api/auth/logout")
       .then(res => res.json())
       .then(data => {
         if (data.authenticated) {
@@ -126,29 +125,38 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 20, background: "#FAFAFA", minHeight: "100vh" }}>
       <PageHeader title="Settings" description="Company configuration and access control overview" breadcrumb="Settings" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         {/* Company Settings */}
-        <div className="bg-white rounded-xl p-5" style={{ border: "1px solid #e2e8f0" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#eff6ff" }}>
-              <Building2 className="w-4 h-4" style={{ color: "#2563eb" }} />
+        <div className="card" style={{ padding: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#F4F4F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Building2 style={{ width: 15, height: 15, color: "#18181B" }} />
             </div>
-            <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Company / Depot</p>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Company Settings</p>
+              <p style={{ fontSize: 12, color: "#A1A1AA" }}>Define depot rules & formats</p>
+            </div>
           </div>
 
-          <div className="space-y-3">
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Company / Depot Name</label>
-              <input value={settings.company} onChange={e => setSettings({ ...settings, company: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
+              <label style={labelStyle}>Company / Depot Name</label>
+              <input 
+                value={settings.company} 
+                onChange={e => setSettings({ ...settings, company: e.target.value })} 
+                className="input-field"
+              />
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1 flex items-center gap-1" style={{ color: "#374151" }}>
-                <DollarSign className="w-3.5 h-3.5" /> Currency
-              </label>
-              <select value={settings.currency} onChange={e => setSettings({ ...settings, currency: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
+              <label style={labelStyle}>Currency Symbol</label>
+              <select 
+                value={settings.currency} 
+                onChange={e => setSettings({ ...settings, currency: e.target.value })} 
+                className="input-field"
+              >
                 <option>INR (₹)</option>
                 <option>USD ($)</option>
                 <option>EUR (€)</option>
@@ -156,42 +164,55 @@ export default function SettingsPage() {
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium mb-1 flex items-center gap-1" style={{ color: "#374151" }}>
-                <MapPin className="w-3.5 h-3.5" /> Distance Unit
-              </label>
-              <select value={settings.distanceUnit} onChange={e => setSettings({ ...settings, distanceUnit: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
+              <label style={labelStyle}>Distance Unit</label>
+              <select 
+                value={settings.distanceUnit} 
+                onChange={e => setSettings({ ...settings, distanceUnit: e.target.value })} 
+                className="input-field"
+              >
                 <option>Kilometers</option>
                 <option>Miles</option>
               </select>
             </div>
-            <button onClick={handleSave} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: saved ? "#16a34a" : "#2563eb" }}>
-              <Save className="w-3.5 h-3.5" />
-              {saved ? "Saved!" : "Save Settings"}
-            </button>
-            <p className="text-xs" style={{ color: "#94a3b8" }}>Settings are stored locally in this browser session.</p>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
+              <button 
+                onClick={handleSave} 
+                className="btn btn-primary"
+                style={{ background: saved ? "#10B981" : "#18181B" }}
+              >
+                <Save style={{ width: 14, height: 14 }} />
+                {saved ? "Saved!" : "Save Changes"}
+              </button>
+              <span style={{ fontSize: 11, color: "#A1A1AA" }}>Stored in browser storage</span>
+            </div>
           </div>
         </div>
 
         {/* Platform Info */}
-        <div className="bg-white rounded-xl p-5" style={{ border: "1px solid #e2e8f0" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#f0fdf4" }}>
-              <Settings className="w-4 h-4" style={{ color: "#16a34a" }} />
+        <div className="card" style={{ padding: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#F4F4F5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <Settings style={{ width: 15, height: 15, color: "#18181B" }} />
             </div>
-            <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Platform Info</p>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>System Information</p>
+              <p style={{ fontSize: 12, color: "#A1A1AA" }}>Operational environment status</p>
+            </div>
           </div>
-          <div className="space-y-3 text-sm">
+
+          <div style={{ display: "flex", flexDirection: "column" }}>
             {[
-              { label: "Platform", value: "TransitOps" },
-              { label: "Version", value: "1.0.0 — Hackathon Build" },
-              { label: "Auth", value: "iron-session + bcrypt RBAC" },
-              { label: "Database", value: "PostgreSQL via Prisma ORM" },
-              { label: "Session Expiry", value: "24 hours" },
-              { label: "Demo Password", value: "demo1234 (all accounts)" },
-            ].map(item => (
-              <div key={item.label} className="flex items-center justify-between py-1.5" style={{ borderBottom: "1px solid #f8fafc" }}>
-                <span style={{ color: "#64748b" }}>{item.label}</span>
-                <span className="font-medium" style={{ color: "#0f172a" }}>{item.value}</span>
+              { label: "Platform Core", value: "TransitOps Enterprise v1.0" },
+              { label: "Execution Environment", value: "Next.js 15 (Turbopack)" },
+              { label: "Database Layer", value: "PostgreSQL v16 via Prisma Adapter" },
+              { label: "Access Control Model", value: "Session-based Cryptographic RBAC" },
+              { label: "Security Token Age", value: "86,400 seconds (24 Hours)" },
+              { label: "Evaluation Bypass", value: "Active (demo accounts enabled)" },
+            ].map((item, idx, arr) => (
+              <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 0", borderBottom: idx < arr.length - 1 ? "1px solid #F4F4F5" : "none" }}>
+                <span style={{ fontSize: 13, fontWeight: 450, color: "#71717A" }}>{item.label}</span>
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#18181B" }}>{item.value}</span>
               </div>
             ))}
           </div>
@@ -200,41 +221,52 @@ export default function SettingsPage() {
 
       {/* Pending User Role Assignment (only for Fleet Managers) */}
       {currentUser?.role === "FLEET_MANAGER" && (
-        <div className="bg-white rounded-xl p-5 mb-6" style={{ border: "1px solid #e2e8f0" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center bg-amber-50">
-              <Shield className="w-4 h-4 text-amber-500" />
+        <div className="card" style={{ overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: "1px solid #E4E4E7" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 30, height: 30, borderRadius: 8, background: "#FFFBEB", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Shield style={{ width: 14, height: 14, color: "#F59E0B" }} />
+              </div>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Pending User Assignments</p>
+                <p style={{ fontSize: 12, color: "#A1A1AA" }}>Approve new operational staff registrations</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-slate-800">Pending User Assignments</p>
-              <p className="text-xs text-slate-500 mt-0.5">Assign operational roles to newly registered users</p>
-            </div>
+            {pendingUsers.length > 0 && (
+              <span className="chip chip-amber" style={{ fontWeight: 600 }}>
+                {pendingUsers.length} waiting
+              </span>
+            )}
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
               <thead>
-                <tr className="bg-slate-50 text-slate-600 text-left border-b border-slate-100">
-                  <th className="px-4 py-2.5 font-semibold">Name</th>
-                  <th className="px-4 py-2.5 font-semibold">Email</th>
-                  <th className="px-4 py-2.5 font-semibold">Registration Date</th>
-                  <th className="px-4 py-2.5 font-semibold w-64">Assign Role</th>
+                <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #E4E4E7" }}>
+                  {["Name", "Email Address", "Registration Date", "Assign Access Role"].map(h => (
+                    <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "#A1A1AA" }}>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
-                {pendingUsers.map(user => (
-                  <tr key={user.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 font-medium text-slate-900">{user.name}</td>
-                    <td className="px-4 py-3 text-slate-600">{user.email}</td>
-                    <td className="px-4 py-3 text-slate-500">{new Date(user.createdAt).toLocaleDateString()}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex gap-2">
+              <tbody>
+                {pendingUsers.map((user, i) => (
+                  <tr key={user.id} className="table-row-hover" style={{ borderBottom: i < pendingUsers.length - 1 ? "1px solid #F4F4F5" : "none" }}>
+                    <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 500, color: "#18181B" }}>{user.name}</td>
+                    <td style={{ padding: "12px 16px", fontSize: 13, color: "#52525B" }}>{user.email}</td>
+                    <td style={{ padding: "12px 16px", fontSize: 13, color: "#71717A" }}>
+                      {new Date(user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      <div style={{ display: "flex", gap: 8 }}>
                         <select
                           value={assigningRoles[user.id] || ""}
                           onChange={e => setAssigningRoles({ ...assigningRoles, [user.id]: e.target.value })}
-                          className="border border-slate-200 rounded px-2.5 py-1 outline-none text-xs focus:border-blue-500"
+                          className="input-field"
+                          style={{ width: 180, padding: "4px 8px", fontSize: 12 }}
                         >
-                          <option value="">Select Role...</option>
+                          <option value="">Select access level...</option>
                           <option value="FLEET_MANAGER">Fleet Manager</option>
                           <option value="DISPATCHER">Dispatcher</option>
                           <option value="SAFETY_OFFICER">Safety Officer</option>
@@ -243,9 +275,9 @@ export default function SettingsPage() {
                         <button
                           onClick={() => handleAssignRole(user.id, assigningRoles[user.id])}
                           disabled={!assigningRoles[user.id]}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="btn btn-primary btn-sm"
                         >
-                          Assign
+                          Assign Access
                         </button>
                       </div>
                     </td>
@@ -253,8 +285,9 @@ export default function SettingsPage() {
                 ))}
                 {pendingUsers.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
-                      No pending users awaiting role assignment
+                    <td colSpan={4} style={{ padding: "40px 16px", textAlign: "center" }}>
+                      <p style={{ fontSize: 13, fontWeight: 500, color: "#059669" }}>All Clear</p>
+                      <p style={{ fontSize: 12, marginTop: 4, color: "#A1A1AA" }}>No pending staff registrations requiring approval.</p>
                     </td>
                   </tr>
                 )}
@@ -265,22 +298,26 @@ export default function SettingsPage() {
       )}
 
       {/* RBAC Matrix */}
-      <div className="bg-white rounded-xl" style={{ border: "1px solid #e2e8f0" }}>
-        <div className="px-5 py-4 flex items-center gap-2" style={{ borderBottom: "1px solid #f1f5f9" }}>
-          <Shield className="w-4 h-4" style={{ color: "#7c3aed" }} />
+      <div className="card" style={{ overflow: "hidden" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", borderBottom: "1px solid #E4E4E7" }}>
+          <div style={{ width: 30, height: 30, borderRadius: 8, background: "#F5F3FF", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <Shield style={{ width: 14, height: 14, color: "#8B5CF6" }} />
+          </div>
           <div>
-            <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Role-Based Access Control Matrix</p>
-            <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>Read-only reference — all permissions are enforced server-side via session middleware</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Access Control Matrix (RBAC)</p>
+            <p style={{ fontSize: 12, color: "#A1A1AA" }}>Permissions strictly enforced server-side via session cookies</p>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: "#fafafa", borderBottom: "1px solid #f1f5f9" }}>
-                <th className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide w-40" style={{ color: "#64748b" }}>Resource</th>
+              <tr style={{ background: "#FAFAFA", borderBottom: "1px solid #E4E4E7" }}>
+                <th style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "#A1A1AA" }}>
+                  Resource Area
+                </th>
                 {ROLES.map(role => (
-                  <th key={role} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide" style={{ color: "#64748b" }}>
+                  <th key={role} style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: "#A1A1AA" }}>
                     {ROLE_LABELS[role]}
                   </th>
                 ))}
@@ -288,18 +325,18 @@ export default function SettingsPage() {
             </thead>
             <tbody>
               {RBAC_MATRIX.map((row, i) => (
-                <tr key={row.resource} style={{ borderBottom: i < RBAC_MATRIX.length - 1 ? "1px solid #f8fafc" : "none" }}>
-                  <td className="px-5 py-3.5 text-sm font-medium" style={{ color: "#374151" }}>{row.resource}</td>
+                <tr key={row.resource} className="table-row-hover" style={{ borderBottom: i < RBAC_MATRIX.length - 1 ? "1px solid #F4F4F5" : "none" }}>
+                  <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 600, color: "#18181B" }}>{row.resource}</td>
                   {ROLES.map(role => {
                     const cell = row[role];
                     return (
-                      <td key={role} className="px-4 py-3.5">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="inline-flex items-center gap-1 text-xs font-semibold" style={{ color: cell.color }}>
-                            <div className="w-1.5 h-1.5 rounded-full" style={{ background: cell.color }} />
+                      <td key={role} style={{ padding: "12px 16px" }}>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: cell.color }}>
+                            <span style={{ width: 6, height: 6, borderRadius: "50%", background: cell.color }} />
                             {cell.level}
                           </span>
-                          <span className="text-xs" style={{ color: "#94a3b8" }}>{cell.desc}</span>
+                          <span style={{ fontSize: 11, color: "#71717A", marginTop: 2 }}>{cell.desc}</span>
                         </div>
                       </td>
                     );
@@ -313,3 +350,11 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: 12,
+  fontWeight: 500,
+  color: "#71717A",
+  marginBottom: 5,
+};

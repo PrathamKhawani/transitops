@@ -1,4 +1,6 @@
-import { AlertCircle, CheckCircle, Info, AlertTriangle } from "lucide-react";
+"use client";
+
+import { AlertCircle, CheckCircle, AlertTriangle, ShieldAlert, ArrowRight } from "lucide-react";
 
 export type AlertSeverity = "CRITICAL" | "WARNING" | "INFO";
 
@@ -11,58 +13,258 @@ export interface OpsAlert {
   href?: string;
 }
 
+const SEVERITY_CONFIG = {
+  CRITICAL: {
+    icon: AlertCircle,
+    iconColor: "#DC2626",
+    bg: "#FEF2F2",
+    border: "#FEE2E2",
+    accentBar: "#EF4444",
+    label: "Critical",
+    chipClass: "chip-red",
+  },
+  WARNING: {
+    icon: AlertTriangle,
+    iconColor: "#D97706",
+    bg: "#FFFBEB",
+    border: "#FDE68A",
+    accentBar: "#F59E0B",
+    label: "Warning",
+    chipClass: "chip-amber",
+  },
+  INFO: {
+    icon: CheckCircle,
+    iconColor: "#059669",
+    bg: "#ECFDF5",
+    border: "#D1FAE5",
+    accentBar: "#10B981",
+    label: "Info",
+    chipClass: "chip-green",
+  },
+};
+
 export function OperationsControlCenter({ alerts }: { alerts: OpsAlert[] }) {
+  const criticalCount = alerts.filter((a) => a.severity === "CRITICAL").length;
+  const warningCount = alerts.filter((a) => a.severity === "WARNING").length;
+  const infoCount = alerts.filter((a) => a.severity === "INFO").length;
+
   if (alerts.length === 0) {
     return (
-      <div className="bg-white rounded-xl p-5" style={{ border: "1px solid #e2e8f0" }}>
-        <div className="flex items-center gap-2 mb-4 pb-3" style={{ borderBottom: "1px solid #f1f5f9" }}>
-          <Info className="w-5 h-5 text-blue-500" />
-          <h2 className="text-sm font-semibold" style={{ color: "#0f172a" }}>Operations Control Center</h2>
+      <div className="card" style={{ overflow: "hidden" }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "14px 18px",
+            borderBottom: "1px solid #E4E4E7",
+          }}
+        >
+          <div
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 8,
+              background: "#EFF6FF",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <ShieldAlert style={{ width: 14, height: 14, color: "#3B82F6" }} />
+          </div>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>
+              Operations Control
+            </p>
+            <p style={{ fontSize: 12, color: "#A1A1AA" }}>
+              Real-time fleet alerting
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-center py-4" style={{ color: "#64748b" }}>No active alerts. Operations are optimal.</p>
+        <div style={{ padding: "40px 18px", textAlign: "center" }}>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: "#ECFDF5",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 10px",
+            }}
+          >
+            <CheckCircle style={{ width: 18, height: 18, color: "#10B981" }} />
+          </div>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "#059669" }}>
+            All Systems Operational
+          </p>
+          <p style={{ fontSize: 12, marginTop: 4, color: "#A1A1AA" }}>
+            No active alerts — fleet is running smoothly
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
-      <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid #f1f5f9", background: "#f8fafc" }}>
-        <div className="flex items-center gap-2">
-          <AlertCircle className="w-5 h-5" style={{ color: "#334155" }} />
-          <h2 className="text-sm font-semibold" style={{ color: "#0f172a" }}>Operations Control Center</h2>
+    <div className="card" style={{ overflow: "hidden" }}>
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "14px 18px",
+          borderBottom: "1px solid #E4E4E7",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div
+            style={{
+              width: 30,
+              height: 30,
+              borderRadius: 8,
+              background: criticalCount > 0 ? "#FEF2F2" : "#FFFBEB",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <ShieldAlert
+              style={{
+                width: 14,
+                height: 14,
+                color: criticalCount > 0 ? "#DC2626" : "#D97706",
+              }}
+            />
+          </div>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>
+              Operations Control
+            </p>
+            <p style={{ fontSize: 12, color: "#A1A1AA" }}>
+              {alerts.length} active alert{alerts.length !== 1 ? "s" : ""}
+            </p>
+          </div>
         </div>
-        <span className="text-xs font-semibold px-2.5 py-1 rounded-full" style={{ background: "#fef2f2", color: "#b91c1c" }}>
-          {alerts.filter(a => a.severity === "CRITICAL").length} Critical
-        </span>
+
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          {criticalCount > 0 && (
+            <span className="chip chip-red" style={{ fontWeight: 600 }}>
+              {criticalCount} Critical
+            </span>
+          )}
+          {warningCount > 0 && (
+            <span className="chip chip-amber" style={{ fontWeight: 600 }}>
+              {warningCount} Warning
+            </span>
+          )}
+          {infoCount > 0 && (
+            <span className="chip chip-green" style={{ fontWeight: 600 }}>
+              {infoCount} Info
+            </span>
+          )}
+        </div>
       </div>
-      <div className="divide-y" style={{ borderColor: "#f1f5f9" }}>
-        {alerts.map(alert => {
-          const bgHover = alert.severity === "CRITICAL" ? "#fef2f2" : alert.severity === "WARNING" ? "#fffbeb" : "#f0fdf4";
+
+      {/* Alert rows */}
+      <div>
+        {alerts.map((alert, i) => {
+          const cfg = SEVERITY_CONFIG[alert.severity];
+          const AlertIcon = cfg.icon;
+
           return (
-            <div key={alert.id} className="p-4 flex gap-3 transition-colors hover:bg-slate-50">
-              <div className="mt-0.5 flex-shrink-0">
-                {alert.severity === "CRITICAL" && <AlertCircle className="w-5 h-5" style={{ color: "#ef4444" }} />}
-                {alert.severity === "WARNING" && <AlertTriangle className="w-5 h-5" style={{ color: "#f59e0b" }} />}
-                {alert.severity === "INFO" && <CheckCircle className="w-5 h-5" style={{ color: "#10b981" }} />}
+            <div
+              key={alert.id}
+              className="table-row-hover"
+              style={{
+                display: "flex",
+                gap: 10,
+                padding: "12px 18px",
+                borderBottom: i < alerts.length - 1 ? "1px solid #F4F4F5" : "none",
+                borderLeft: `3px solid ${cfg.accentBar}`,
+              }}
+            >
+              {/* Icon */}
+              <div
+                style={{
+                  width: 28,
+                  height: 28,
+                  borderRadius: 7,
+                  background: cfg.bg,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                  marginTop: 1,
+                }}
+              >
+                <AlertIcon style={{ width: 13, height: 13, color: cfg.iconColor }} />
               </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex justify-between items-start gap-2">
-                  <p className="text-sm font-semibold truncate" style={{ color: "#0f172a" }}>{alert.title}</p>
-                  <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded flex-shrink-0" style={{
-                    background: alert.severity === "CRITICAL" ? "#fef2f2" : alert.severity === "WARNING" ? "#fffbeb" : "#f0fdf4",
-                    color: alert.severity === "CRITICAL" ? "#b91c1c" : alert.severity === "WARNING" ? "#b45309" : "#047857"
-                  }}>
-                    {alert.severity}
+
+              {/* Content */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", gap: 8 }}>
+                  <p style={{ fontSize: 13, fontWeight: 500, color: "#18181B", lineHeight: 1.3 }}>
+                    {alert.title}
+                  </p>
+                  <span
+                    className={`chip ${cfg.chipClass}`}
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.04em",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {cfg.label}
                   </span>
                 </div>
-                <p className="text-xs mt-1" style={{ color: "#64748b" }}>{alert.reason}</p>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-xs font-medium px-2 py-0.5 rounded truncate max-w-[200px]" style={{ background: "#f1f5f9", color: "#334155" }}>
+
+                <p style={{ fontSize: 12, marginTop: 3, color: "#71717A" }}>
+                  {alert.reason}
+                </p>
+
+                <div style={{ marginTop: 6, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 500,
+                      padding: "2px 8px",
+                      borderRadius: 6,
+                      background: "#F4F4F5",
+                      color: "#52525B",
+                      border: "1px solid #E4E4E7",
+                      maxWidth: 200,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {alert.entity}
                   </span>
                   {alert.href && (
-                    <a href={alert.href} className="text-xs font-medium hover:underline flex-shrink-0 ml-2" style={{ color: "#2563eb" }}>
-                      Take Action &rarr;
+                    <a
+                      href={alert.href}
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 500,
+                        color: "#3B82F6",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 4,
+                        textDecoration: "none",
+                        flexShrink: 0,
+                        marginLeft: 8,
+                      }}
+                    >
+                      Take Action
+                      <ArrowRight style={{ width: 11, height: 11 }} />
                     </a>
                   )}
                 </div>

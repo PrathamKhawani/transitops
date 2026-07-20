@@ -1,46 +1,58 @@
-import { prisma } from "@/lib/prisma";
-import { requireAuth } from "@/lib/auth";
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/layout/AppHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { formatDate } from "@/lib/utils";
-import { getLicenseState } from "@/lib/domain";
+function getLicenseState(expiryDate: Date | string): "VALID" | "EXPIRING_SOON" | "EXPIRED" {
+  const now = new Date();
+  const expiry = new Date(expiryDate);
+  if (expiry <= now) return "EXPIRED";
+  const daysLeft = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24);
+  return daysLeft <= 30 ? "EXPIRING_SOON" : "VALID";
+}
 
-export default async function DispatchDriversPage() {
-  const session = await requireAuth();
-  if (!session || session.role !== "DISPATCHER") redirect("/login");
+export default function DispatchDriversPage() {
+  const [drivers, setDrivers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const drivers = await prisma.driver.findMany({ orderBy: { status: "asc" } });
+  useEffect(() => {
+    fetch("/api/drivers")
+      .then((res) => res.json())
+      .then((data) => {
+        const driversList = Array.isArray(data) ? data : [];
+        const driversWithEligibility = driversList.map((d: any) => {
+          let eligible = true;
+          let reason = "Ready";
 
-  // Map drivers to add eligibility info
-  const driversWithEligibility = drivers.map(d => {
-    let eligible = true;
-    let reason = "Ready";
+          if (d.status === "SUSPENDED") {
+            eligible = false;
+            reason = "Suspended";
+          } else if (d.status === "ON_TRIP") {
+            eligible = false;
+            reason = "On Trip";
+          } else if (d.status === "OFF_DUTY") {
+            eligible = false;
+            reason = "Off Duty";
+          } else {
+            const state = getLicenseState(d.licenseExpiryDate);
+            if (state === "EXPIRED") {
+              eligible = false;
+              reason = "Expired";
+            }
+          }
 
-    if (d.status === "SUSPENDED") {
-      eligible = false;
-      reason = "Suspended";
-    } else if (d.status === "ON_TRIP") {
-      eligible = false;
-      reason = "On Trip";
-    } else if (d.status === "OFF_DUTY") {
-      eligible = false;
-      reason = "Off Duty";
-    } else {
-      const state = getLicenseState(d.licenseExpiryDate);
-      if (state === "EXPIRED") {
-        eligible = false;
-        reason = "Expired";
-      }
-    }
-
-    return {
-      ...d,
-      eligibility: eligible ? "Eligible" : `Ineligible: ${reason}`,
-      eligible,
-    };
-  });
+          return {
+            ...d,
+            eligibility: eligible ? "Eligible" : `Ineligible: ${reason}`,
+            eligible,
+          };
+        });
+        setDrivers(driversWithEligibility);
+        setLoading(false);
+      });
+  }, []);
 
   const columns: Column<any>[] = [
     { key: "name", label: "Name", sortable: true },
@@ -70,7 +82,7 @@ export default async function DispatchDriversPage() {
   return (
     <div className="p-6">
       <PageHeader title="Driver Availability" description="Check which drivers are available for assignment" breadcrumb="Dispatcher" />
-      <DataTable columns={columns} data={driversWithEligibility as unknown as Record<string, unknown>[]} searchPlaceholder="Search drivers..." />
+      <DataTable loading={loading} columns={columns} data={drivers as unknown as Record<string, unknown>[]} searchPlaceholder="Search drivers..." />
     </div>
   );
 }
