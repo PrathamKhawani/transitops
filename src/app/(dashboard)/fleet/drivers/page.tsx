@@ -107,7 +107,7 @@ export default function FleetDriversPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader title="Drivers" description="View fleet drivers and license status" breadcrumb="Fleet Manager" />
       <DataTable
         columns={columnsWithActions}

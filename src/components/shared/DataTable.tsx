@@ -72,22 +72,23 @@ export function DataTable<T extends Record<string, unknown>>({
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 10,
-            padding: "12px 16px",
+            gap: 12,
+            padding: "16px 24px",
             borderBottom: "1px solid #E4E4E7",
             background: "#FAFAFA",
+            flexWrap: "wrap",
           }}
         >
           {searchable && (
-            <div style={{ position: "relative", flex: 1, maxWidth: 280 }}>
+            <div style={{ position: "relative", flex: 1, minWidth: 200, maxWidth: 320 }}>
               <Search
                 style={{
                   position: "absolute",
-                  left: 10,
+                  left: 12,
                   top: "50%",
                   transform: "translateY(-50%)",
-                  width: 13,
-                  height: 13,
+                  width: 14,
+                  height: 14,
                   color: "#A1A1AA",
                   pointerEvents: "none",
                 }}
@@ -98,12 +99,12 @@ export function DataTable<T extends Record<string, unknown>>({
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder={searchPlaceholder}
                 className="input-field"
-                style={{ paddingLeft: 32, paddingTop: 6, paddingBottom: 6, fontSize: 13 }}
+                style={{ paddingLeft: 36, paddingTop: 8, paddingBottom: 8, fontSize: 13 }}
               />
             </div>
           )}
           {filters}
-          <p style={{ fontSize: 12, color: "#A1A1AA", marginLeft: "auto", whiteSpace: "nowrap" }}>
+          <p style={{ fontSize: 12, color: "#A1A1AA", marginLeft: "auto", whiteSpace: "nowrap", flexShrink: 0 }}>
             {filtered.length} record{filtered.length !== 1 ? "s" : ""}
           </p>
         </div>
@@ -111,23 +112,13 @@ export function DataTable<T extends Record<string, unknown>>({
 
       {/* Table */}
       <div style={{ overflowX: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table className="data-table">
           <thead>
-            <tr style={{ borderBottom: "1px solid #E4E4E7", background: "#FAFAFA" }}>
+            <tr>
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={col.className || ""}
-                  style={{
-                    padding: "10px 16px",
-                    textAlign: "left",
-                    fontSize: 11,
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.06em",
-                    color: "#A1A1AA",
-                    whiteSpace: "nowrap",
-                  }}
+                  className={`th-cell ${col.className || ""}`}
                 >
                   {col.sortable ? (
                     <button
@@ -135,7 +126,7 @@ export function DataTable<T extends Record<string, unknown>>({
                       style={{
                         display: "inline-flex",
                         alignItems: "center",
-                        gap: 4,
+                        gap: 5,
                         background: "none",
                         border: "none",
                         cursor: "pointer",
@@ -168,9 +159,9 @@ export function DataTable<T extends Record<string, unknown>>({
           <tbody>
             {loading ? (
               Array.from({ length: 6 }).map((_, i) => (
-                <tr key={i} style={{ borderBottom: "1px solid #F4F4F5" }}>
+                <tr key={i}>
                   {columns.map((col) => (
-                    <td key={col.key} style={{ padding: "12px 16px" }}>
+                    <td key={col.key} className="td-cell">
                       <div
                         className="skeleton"
                         style={{ height: 14, borderRadius: 4, width: `${55 + Math.random() * 35}%` }}
@@ -181,27 +172,18 @@ export function DataTable<T extends Record<string, unknown>>({
               ))
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} style={{ padding: "56px 16px", textAlign: "center" }}>
-                  <div
-                    style={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: 10,
-                      background: "#F4F4F5",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      margin: "0 auto 10px",
-                    }}
-                  >
-                    <Search style={{ width: 15, height: 15, color: "#A1A1AA" }} />
+                <td colSpan={columns.length}>
+                  <div className="empty-state">
+                    <div className="empty-state-icon">
+                      <Search style={{ width: 18, height: 18, color: "#A1A1AA" }} />
+                    </div>
+                    <p className="empty-state-title">{emptyText}</p>
+                    {search && (
+                      <p className="empty-state-sub">
+                        No results for &ldquo;{search}&rdquo;
+                      </p>
+                    )}
                   </div>
-                  <p style={{ fontSize: 13, fontWeight: 500, color: "#52525B" }}>{emptyText}</p>
-                  {search && (
-                    <p style={{ fontSize: 12, marginTop: 4, color: "#A1A1AA" }}>
-                      No results for &ldquo;{search}&rdquo;
-                    </p>
-                  )}
                 </td>
               </tr>
             ) : (
@@ -209,17 +191,12 @@ export function DataTable<T extends Record<string, unknown>>({
                 <tr
                   key={i}
                   onClick={() => onRowClick?.(row)}
-                  className="table-row-hover"
-                  style={{
-                    borderBottom: i < filtered.length - 1 ? "1px solid #F4F4F5" : "none",
-                    cursor: onRowClick ? "pointer" : "default",
-                  }}
+                  style={{ cursor: onRowClick ? "pointer" : "default" }}
                 >
                   {columns.map((col) => (
                     <td
                       key={col.key}
-                      className={col.className || ""}
-                      style={{ padding: "12px 16px", fontSize: 13, color: "#3F3F46" }}
+                      className={`td-cell ${col.className || ""}`}
                     >
                       {col.render ? col.render(row[col.key], row) : String(row[col.key] ?? "—")}
                     </td>

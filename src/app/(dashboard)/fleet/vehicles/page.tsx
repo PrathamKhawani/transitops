@@ -100,7 +100,7 @@ export default function VehiclesPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader
         title="Vehicles"
         description="Manage fleet vehicles, assignments and status"
@@ -119,15 +119,15 @@ export default function VehiclesPage() {
         searchPlaceholder="Search vehicles..."
         searchKeys={["name", "registrationNumber", "model", "region"]}
         filters={
-          <div className="flex gap-2">
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 outline-none" style={{ borderColor: "#e2e8f0", color: "#374151" }}>
+          <div className="flex gap-3">
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 130 }}>
               {STATUSES.map(s => <option key={s} value={s}>{s || "All Status"}</option>)}
             </select>
-            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 outline-none" style={{ borderColor: "#e2e8f0", color: "#374151" }}>
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 120 }}>
               <option value="">All Types</option>
               {VEHICLE_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
-            <select value={regionFilter} onChange={(e) => setRegionFilter(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 outline-none" style={{ borderColor: "#e2e8f0", color: "#374151" }}>
+            <select value={regionFilter} onChange={(e) => setRegionFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 130 }}>
               <option value="">All Regions</option>
               {REGIONS.map(r => <option key={r}>{r}</option>)}
             </select>

@@ -2,8 +2,8 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════
-   TRANSITOPS — PREMIUM DESIGN SYSTEM v2
-   Refined · Spacious · Professional
+   TRANSITOPS — PREMIUM DESIGN SYSTEM v3
+   Spacious · Clear · Professional
 ═══════════════════════════════════════════════════════════ */
 
 @theme inline {
@@ -65,6 +65,7 @@
   --space-7: 28px;
   --space-8: 32px;
   --space-10: 40px;
+  --space-12: 48px;
 
   /* Radius */
   --radius-sm: 6px;
@@ -169,6 +170,41 @@ a, button { transition: all 0.15s ease; }
 .stagger > *:nth-child(6) { animation-delay: 200ms; }
 
 /* ═══════════════════════════════════════════════════════════
+   PAGE LAYOUT
+═══════════════════════════════════════════════════════════ */
+
+/* Standard page content wrapper — use this on all dashboard page content areas */
+.page-content {
+  padding: 36px 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Tighter variant for dense views */
+.page-content-sm {
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Section wrapper within page-content */
+.page-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Section heading row (label + action) */
+.section-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+/* ═══════════════════════════════════════════════════════════
    CARD SYSTEM
 ═══════════════════════════════════════════════════════════ */
 .card {
@@ -195,6 +231,34 @@ a, button { transition: all 0.15s ease; }
   border-color: #D4D4D8;
 }
 
+/* Card header — consistent padding for all card title rows */
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid #E4E4E7;
+}
+.card-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #18181B;
+  letter-spacing: -0.015em;
+}
+.card-header-sub {
+  font-size: 12px;
+  margin-top: 2px;
+  color: #A1A1AA;
+}
+
+/* Card body — consistent inner padding */
+.card-body {
+  padding: 24px;
+}
+.card-body-sm {
+  padding: 18px 24px;
+}
+
 /* Hero glass card (on dark backgrounds) */
 .card-glass {
   background: rgba(255,255,255,0.06);
@@ -210,6 +274,55 @@ a, button { transition: all 0.15s ease; }
 }
 
 /* ═══════════════════════════════════════════════════════════
+   KPI CARD STANDARD
+═══════════════════════════════════════════════════════════ */
+.kpi-card {
+  padding: 20px 22px;
+}
+.kpi-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #A1A1AA;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.kpi-label-hero {
+  font-size: 11px;
+  font-weight: 500;
+  color: #71717A;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.kpi-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #18181B;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-value-hero {
+  font-size: 30px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.kpi-sub {
+  font-size: 12px;
+  margin-top: 8px;
+  color: #A1A1AA;
+}
+.kpi-sub-hero {
+  font-size: 12px;
+  margin-top: 8px;
+  color: #52525B;
+}
+
+/* ═══════════════════════════════════════════════════════════
    BUTTON SYSTEM
 ═══════════════════════════════════════════════════════════ */
 .btn {
@@ -217,7 +330,7 @@ a, button { transition: all 0.15s ease; }
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 9px 16px;
   border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 500;
@@ -269,12 +382,12 @@ a, button { transition: all 0.15s ease; }
 }
 
 .btn-sm {
-  padding: 5px 10px;
+  padding: 6px 12px;
   font-size: 12px;
   border-radius: var(--radius-sm);
 }
 .btn-lg {
-  padding: 10px 20px;
+  padding: 11px 22px;
   font-size: 14px;
   border-radius: var(--radius-md);
 }
@@ -284,7 +397,7 @@ a, button { transition: all 0.15s ease; }
 ═══════════════════════════════════════════════════════════ */
 .input-field {
   width: 100%;
-  padding: 8px 12px;
+  padding: 9px 13px;
   border-radius: var(--radius-md);
   background: #FFFFFF;
   color: #09090B;
@@ -312,7 +425,7 @@ select.input-field {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 7px 10px;
+  padding: 8px 12px;
   border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 450;
@@ -346,7 +459,7 @@ select.input-field {
    PROGRESS BARS
 ═══════════════════════════════════════════════════════════ */
 .progress-track {
-  height: 4px;
+  height: 5px;
   border-radius: 100px;
   background: #F4F4F5;
   overflow: hidden;
@@ -357,15 +470,15 @@ select.input-field {
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.progress-bar { height: 4px; border-radius: 100px; background: #F4F4F5; overflow: hidden; }
+.progress-bar { height: 5px; border-radius: 100px; background: #F4F4F5; overflow: hidden; }
 .progress-bar-fill { height: 100%; border-radius: 100px; transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1); }
 
 /* ═══════════════════════════════════════════════════════════
    STATUS DOT
 ═══════════════════════════════════════════════════════════ */
 .status-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -374,13 +487,56 @@ select.input-field {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   TABLE STYLES
+   TABLE STYLES — Spacious & Clear
 ═══════════════════════════════════════════════════════════ */
 .table-row-hover {
   transition: background 0.1s ease;
 }
 .table-row-hover:hover {
+  background: #F8F8F9;
+}
+
+/* Standard table header cell */
+.th-cell {
+  padding: 14px 22px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #A1A1AA;
+  white-space: nowrap;
   background: #FAFAFA;
+}
+
+/* Standard table data cell */
+.td-cell {
+  padding: 16px 22px;
+  font-size: 13.5px;
+  color: #3F3F46;
+  vertical-align: middle;
+}
+
+/* Table wrapper: overflow scroll + clean borders */
+.table-wrapper {
+  overflow-x: auto;
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.data-table thead tr {
+  border-bottom: 1.5px solid #E4E4E7;
+  background: #FAFAFA;
+}
+.data-table tbody tr {
+  border-bottom: 1px solid #F4F4F5;
+}
+.data-table tbody tr:last-child {
+  border-bottom: none;
+}
+.data-table tbody tr:hover {
+  background: #F8F8F9;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -389,12 +545,13 @@ select.input-field {
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 2px 8px;
+  gap: 5px;
+  padding: 3px 10px;
   border-radius: 100px;
-  font-size: 11px;
+  font-size: 11.5px;
   font-weight: 500;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 .chip-blue    { background: #EFF6FF; color: #1D4ED8; border: 1px solid #DBEAFE; }
 .chip-green   { background: #ECFDF5; color: #059669; border: 1px solid #D1FAE5; }
@@ -410,9 +567,10 @@ select.input-field {
 .section-label {
   font-size: 11px;
   font-weight: 500;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #A1A1AA;
+  margin-bottom: 12px;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -422,7 +580,7 @@ select.input-field {
   position: relative;
   overflow: hidden;
   background: linear-gradient(135deg, #09090B 0%, #18181B 50%, #09090B 100%);
-  padding: var(--space-8) var(--space-8) var(--space-10);
+  padding: 40px 44px 48px;
 }
 .hero-banner::before {
   content: '';
@@ -509,7 +667,7 @@ select.input-field {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   KPI NUMBERS
+   KPI NUMBERS (legacy compat)
 ═══════════════════════════════════════════════════════════ */
 .kpi-number {
   font-size: 28px;
@@ -525,3 +683,52 @@ select.input-field {
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   EMPTY STATE
+═══════════════════════════════════════════════════════════ */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  text-align: center;
+  gap: 8px;
+}
+.empty-state-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #F4F4F5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.empty-state-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #52525B;
+}
+.empty-state-sub {
+  font-size: 12px;
+  color: #A1A1AA;
+  max-width: 280px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   AVATAR
+═══════════════════════════════════════════════════════════ */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-weight: 600;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+.avatar-sm  { width: 28px; height: 28px; font-size: 11px; }
+.avatar-md  { width: 34px; height: 34px; font-size: 13px; }
+.avatar-lg  { width: 40px; height: 40px; font-size: 15px; }

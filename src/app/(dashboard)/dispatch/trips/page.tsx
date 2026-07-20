@@ -165,7 +165,7 @@ export default function TripsPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader
         title="Trips"
         description="Create and manage trip lifecycle"

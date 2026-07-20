@@ -60,7 +60,7 @@ export default async function SafetyDashboard() {
         </div>
 
         {/* Hero KPIs */}
-        <div className="relative stagger" style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        <div className="relative stagger" style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
           {[
             { label: "Total Drivers",    value: totalDrivers,   sub: "Across all routes",       color: "#60A5FA" },
             { label: "Valid Licenses",   value: validLicenses,  sub: "Compliant & active",       color: "#10B981" },
@@ -69,7 +69,7 @@ export default async function SafetyDashboard() {
             <div
               key={kpi.label}
               className="card-glass animate-fade-in-up"
-              style={{ padding: "16px 18px", animationDelay: `${i * 50}ms` }}
+              style={{ padding: "22px 24px", animationDelay: `${i * 50}ms` }}
             >
               <p style={{ fontSize: 11, fontWeight: 500, color: "#71717A", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
                 {kpi.label}
@@ -89,10 +89,10 @@ export default async function SafetyDashboard() {
       </div>
 
       {/* ═══ CONTENT ═══ */}
-      <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: "36px 44px", display: "flex", flexDirection: "column", gap: 28 }}>
 
         {/* Alert Stats */}
-        <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
           {[
             { label: "Expiring (30d)",   value: expiringDrivers, accent: "#F59E0B", sub: "Renewal required soon" },
             { label: "Expired Licenses", value: expiredLicenses,  accent: "#EF4444", sub: "Immediate action needed" },
@@ -108,7 +108,7 @@ export default async function SafetyDashboard() {
               key={card.label}
               className="card animate-fade-in-up"
               style={{
-                padding: "16px 18px",
+                padding: "20px 22px",
                 borderLeft: `3px solid ${card.accent}`,
                 animationDelay: `${i * 40}ms`,
               }}
@@ -125,7 +125,7 @@ export default async function SafetyDashboard() {
         </div>
 
         {/* Main panels */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
 
           {/* Low Safety Score */}
           <div className="card" style={{ overflow: "hidden" }}>
@@ -134,12 +134,12 @@ export default async function SafetyDashboard() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "14px 18px",
+                padding: "18px 24px",
                 borderBottom: "1px solid #E4E4E7",
               }}
             >
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Low Safety Scores</p>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>Low Safety Scores</p>
                 <p style={{ fontSize: 12, marginTop: 2, color: "#A1A1AA" }}>Drivers scoring below 80/100</p>
               </div>
               {lowScoreDrivers.length > 0 && (
@@ -166,7 +166,7 @@ export default async function SafetyDashboard() {
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        padding: "12px 18px",
+                        padding: "16px 24px",
                         borderBottom: "1px solid #F4F4F5",
                       }}
                     >
@@ -214,12 +214,12 @@ export default async function SafetyDashboard() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "14px 18px",
+                padding: "18px 24px",
                 borderBottom: "1px solid #E4E4E7",
               }}
             >
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Driver Status</p>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>Driver Status</p>
                 <p style={{ fontSize: 12, marginTop: 2, color: "#A1A1AA" }}>License & compliance status</p>
               </div>
               <a href="/safety/drivers" className="btn btn-blue-soft btn-sm">View all →</a>
@@ -236,8 +236,8 @@ export default async function SafetyDashboard() {
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: 10,
-                      padding: "12px 18px",
+                      gap: 12,
+                      padding: "14px 24px",
                       borderBottom: "1px solid #F4F4F5",
                     }}
                   >
@@ -291,7 +291,7 @@ export default async function SafetyDashboard() {
         </div>
 
         {/* Quick Navigation */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
           {[
             { label: "View All Drivers",  href: "/safety/drivers",    desc: "Manage driver roster, statuses, safety scores", color: "#3B82F6" },
             { label: "Compliance Report", href: "/safety/compliance", desc: "View license expiry and compliance dashboard",   color: "#06B6D4" },
@@ -304,7 +304,7 @@ export default async function SafetyDashboard() {
                 display: "flex",
                 alignItems: "center",
                 gap: 14,
-                padding: "16px 18px",
+                padding: "20px 22px",
                 textDecoration: "none",
                 ["--hover-border" as any]: `${action.color}30`,
               }}

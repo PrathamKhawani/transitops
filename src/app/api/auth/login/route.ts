@@ -18,7 +18,31 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = result.data;
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    let user;
+    try {
+      user = await prisma.user.findUnique({ where: { email } });
+    } catch (dbError: unknown) {
+      console.error("Database connection error:", dbError);
+      const msg = dbError instanceof Error ? dbError.message : String(dbError);
+      // Surface a clear error when DB is unreachable (e.g. missing cloud DB on Vercel)
+      if (
+        msg.includes("ECONNREFUSED") ||
+        msg.includes("connect ETIMEDOUT") ||
+        msg.includes("Can't reach database server") ||
+        msg.includes("does not exist") ||
+        msg.includes("password authentication failed")
+      ) {
+        return NextResponse.json(
+          { error: "Database unavailable. Please contact the administrator." },
+          { status: 503 }
+        );
+      }
+      return NextResponse.json(
+        { error: "Internal server error. Please try again." },
+        { status: 500 }
+      );
+    }
+
     if (!user) {
       return NextResponse.json({ error: "Invalid email or password." }, { status: 401 });
     }
@@ -36,15 +60,19 @@ export async function POST(request: NextRequest) {
     await session.save();
 
     // Log activity
-    await prisma.activityLog.create({
-      data: {
-        userId: user.id,
-        action: "LOGIN",
-        entityType: "User",
-        entityId: user.id,
-        description: `${user.name} logged in`,
-      },
-    });
+    try {
+      await prisma.activityLog.create({
+        data: {
+          userId: user.id,
+          action: "LOGIN",
+          entityType: "User",
+          entityId: user.id,
+          description: `${user.name} logged in`,
+        },
+      });
+    } catch {
+      // Non-critical — don't fail login if activity log fails
+    }
 
     return NextResponse.json({
       success: true,

@@ -69,7 +69,7 @@ export default async function FinanceDashboard() {
         </div>
 
         {/* Hero KPIs */}
-        <div className="relative stagger" style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+        <div className="relative stagger" style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
           {[
             { label: "Total Revenue",     value: formatCurrency(revenue),       sub: `${trips.length} completed trips`,   color: "#10B981" },
             { label: "Total Cost",        value: formatCurrency(totalCost),     sub: "Fuel + maintenance + expenses",      color: "#EF4444" },
@@ -78,7 +78,7 @@ export default async function FinanceDashboard() {
             <div
               key={kpi.label}
               className="card-glass animate-fade-in-up"
-              style={{ padding: "16px 18px", animationDelay: `${i * 50}ms` }}
+              style={{ padding: "22px 24px", animationDelay: `${i * 50}ms` }}
             >
               <p style={{ fontSize: 11, fontWeight: 500, color: "#71717A", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
                 {kpi.label}
@@ -93,10 +93,10 @@ export default async function FinanceDashboard() {
       </div>
 
       {/* ═══ CONTENT ═══ */}
-      <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: "36px 44px", display: "flex", flexDirection: "column", gap: 28 }}>
 
         {/* Secondary KPIs */}
-        <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
           {[
             { label: "Fuel Spend",     value: formatCurrency(fuelCost),                             sub: `${Math.round(totalFuelLiters).toLocaleString("en-IN")}L consumed`, accent: "#F97316" },
             { label: "Maintenance",    value: formatCurrency(maintenanceCost + maintenanceExpenses), sub: "Service & repairs",                                                 accent: "#F59E0B" },
@@ -106,7 +106,7 @@ export default async function FinanceDashboard() {
             <div
               key={card.label}
               className="card animate-fade-in-up"
-              style={{ padding: "16px 18px", borderLeft: `3px solid ${card.accent}`, animationDelay: `${i * 40}ms` }}
+              style={{ padding: "20px 22px", borderLeft: `3px solid ${card.accent}`, animationDelay: `${i * 40}ms` }}
             >
               <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
                 {card.label}
@@ -120,7 +120,7 @@ export default async function FinanceDashboard() {
         </div>
 
         {/* Main panels */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
 
           {/* Cost Breakdown */}
           <div className="card" style={{ overflow: "hidden" }}>
@@ -129,17 +129,17 @@ export default async function FinanceDashboard() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "14px 18px",
+                padding: "18px 24px",
                 borderBottom: "1px solid #E4E4E7",
               }}
             >
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Cost Breakdown</p>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>Cost Breakdown</p>
                 <p style={{ fontSize: 12, marginTop: 2, color: "#A1A1AA" }}>By expense category</p>
               </div>
               <span className="chip chip-slate">{formatCurrency(totalCost)} total</span>
             </div>
-            <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
               {breakdownItems.map(item => (
                 <div key={item.label}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
@@ -170,12 +170,12 @@ export default async function FinanceDashboard() {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "14px 18px",
+                padding: "18px 24px",
                 borderBottom: "1px solid #E4E4E7",
               }}
             >
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Recent Revenue</p>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>Recent Revenue</p>
                 <p style={{ fontSize: 12, marginTop: 2, color: "#A1A1AA" }}>Latest completed trips</p>
               </div>
               <a href="/finance/analytics" className="btn btn-blue-soft btn-sm">View analytics →</a>
@@ -188,13 +188,13 @@ export default async function FinanceDashboard() {
                   <div
                     key={trip.tripCode}
                     className="table-row-hover"
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      padding: "12px 18px",
-                      borderBottom: "1px solid #F4F4F5",
-                    }}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "16px 24px",
+                        borderBottom: "1px solid #F4F4F5",
+                      }}
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div
@@ -233,7 +233,7 @@ export default async function FinanceDashboard() {
           <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
             Quick Navigation
           </p>
-          <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+          <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
             {quickNav.map((action, i) => (
               <a
                 key={action.label}
@@ -243,7 +243,7 @@ export default async function FinanceDashboard() {
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
-                  padding: "14px 16px",
+                  padding: "18px 20px",
                   textDecoration: "none",
                   animationDelay: `${i * 40}ms`,
                   ["--hover-border" as any]: `${action.color}30`,

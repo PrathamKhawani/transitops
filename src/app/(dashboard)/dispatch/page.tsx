@@ -71,12 +71,12 @@ export default async function DispatchDashboard() {
         </div>
 
         {/* Hero KPIs */}
-        <div className="relative stagger" style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10 }}>
+        <div className="relative stagger" style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 12 }}>
           {kpis.map((kpi, i) => (
             <div
               key={kpi.label}
               className="card-glass animate-fade-in-up"
-              style={{ padding: "14px 16px", animationDelay: `${i * 40}ms` }}
+              style={{ padding: "20px 18px", animationDelay: `${i * 40}ms` }}
             >
               <p style={{ fontSize: 10, fontWeight: 500, color: "#71717A", letterSpacing: "0.05em", textTransform: "uppercase", marginBottom: 8 }}>
                 {kpi.label}
@@ -93,14 +93,14 @@ export default async function DispatchDashboard() {
       </div>
 
       {/* ═══ CONTENT ═══ */}
-      <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: "36px 44px", display: "flex", flexDirection: "column", gap: 28 }}>
 
         {/* Quick Actions */}
         <div>
           <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
             Quick Actions
           </p>
-          <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+          <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
             {quickActions.map((action, i) => (
               <a
                 key={action.label}
@@ -110,7 +110,7 @@ export default async function DispatchDashboard() {
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
-                  padding: "14px 16px",
+                  padding: "18px 20px",
                   textDecoration: "none",
                   animationDelay: `${i * 40}ms`,
                   ["--hover-border" as any]: `${action.color}30`,
@@ -151,12 +151,12 @@ export default async function DispatchDashboard() {
               display: "flex",
               alignItems: "center",
               justifyContent: "space-between",
-              padding: "14px 18px",
+              padding: "18px 24px",
               borderBottom: "1px solid #E4E4E7",
             }}
           >
             <div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Recent Trips</p>
+              <p style={{ fontSize: 15, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>Recent Trips</p>
               <p style={{ fontSize: 12, marginTop: 2, color: "#A1A1AA" }}>Latest trip activity</p>
             </div>
             <a href="/dispatch/trips" className="btn btn-blue-soft btn-sm">
@@ -171,16 +171,7 @@ export default async function DispatchDashboard() {
                   {["Trip Code", "Route", "Vehicle", "Driver", "Status", "Date"].map(h => (
                     <th
                       key={h}
-                      style={{
-                        padding: "10px 16px",
-                        textAlign: "left",
-                        fontSize: 11,
-                        fontWeight: 600,
-                        textTransform: "uppercase",
-                        letterSpacing: "0.06em",
-                        color: "#A1A1AA",
-                        whiteSpace: "nowrap",
-                      }}
+                      className="th-cell"
                     >
                       {h}
                     </th>
@@ -196,7 +187,7 @@ export default async function DispatchDashboard() {
                       className="table-row-hover"
                       style={{ borderBottom: i < recentTrips.length - 1 ? "1px solid #F4F4F5" : "none" }}
                     >
-                      <td style={{ padding: "12px 16px" }}>
+                      <td className="td-cell">
                         <span
                           style={{
                             fontSize: 11,
@@ -212,16 +203,16 @@ export default async function DispatchDashboard() {
                           {trip.tripCode}
                         </span>
                       </td>
-                      <td style={{ padding: "12px 16px" }}>
-                        <p style={{ fontSize: 13, fontWeight: 500, color: "#18181B" }}>
+                      <td className="td-cell">
+                        <p style={{ fontSize: 14, fontWeight: 500, color: "#18181B" }}>
                           {trip.source} → {trip.destination}
                         </p>
                       </td>
-                      <td style={{ padding: "12px 16px" }}>
+                      <td className="td-cell">
                         <p style={{ fontSize: 13, color: "#3F3F46" }}>{trip.vehicle.name}</p>
-                        <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 1 }}>{trip.vehicle.registrationNumber}</p>
+                        <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 2 }}>{trip.vehicle.registrationNumber}</p>
                       </td>
-                      <td style={{ padding: "12px 16px" }}>
+                      <td className="td-cell">
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <div
                             style={{
@@ -243,7 +234,7 @@ export default async function DispatchDashboard() {
                           <span style={{ fontSize: 13, color: "#3F3F46" }}>{trip.driver.name}</span>
                         </div>
                       </td>
-                      <td style={{ padding: "12px 16px" }}>
+                      <td className="td-cell">
                         <span
                           className="chip"
                           style={{
@@ -258,7 +249,7 @@ export default async function DispatchDashboard() {
                           {meta.label}
                         </span>
                       </td>
-                      <td style={{ padding: "12px 16px" }}>
+                      <td className="td-cell">
                         <p style={{ fontSize: 12, color: "#A1A1AA" }}>{formatDate(trip.createdAt)}</p>
                       </td>
                     </tr>

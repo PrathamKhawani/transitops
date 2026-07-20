@@ -160,7 +160,7 @@ export default async function FleetDashboard(
         </div>
 
         {/* Hero KPI Cards */}
-        <div className="relative stagger" style={{ marginTop: 24, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="relative stagger" style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
           {[
             { label: "Active Vehicles",   value: totalVehicles,         sub: "Excluding retired",          color: "#3B82F6" },
             { label: "Available Now",      value: availableVehicles,     sub: "Ready to dispatch",          color: "#10B981" },
@@ -170,7 +170,7 @@ export default async function FleetDashboard(
             <div
               key={kpi.label}
               className="card-glass animate-fade-in-up"
-              style={{ padding: "16px 18px", animationDelay: `${i * 40}ms` }}
+              style={{ padding: "22px 24px", animationDelay: `${i * 40}ms` }}
             >
               <p
                 style={{
@@ -207,10 +207,10 @@ export default async function FleetDashboard(
       </div>
 
       {/* ═══ CONTENT ═══ */}
-      <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ padding: "36px 44px", display: "flex", flexDirection: "column", gap: 28 }}>
 
         {/* Secondary KPIs */}
-        <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <div className="stagger" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
           {[
             { label: "Active Trips",    value: activeTrips,    sub: "Currently dispatched",          accent: "#3B82F6" },
             { label: "Pending Trips",   value: draftTrips,     sub: "Awaiting dispatch",              accent: "#F59E0B" },
@@ -221,7 +221,7 @@ export default async function FleetDashboard(
               key={card.label}
               className="card animate-fade-in-up"
               style={{
-                padding: "16px 18px",
+                padding: "20px 22px",
                 borderLeft: `3px solid ${card.accent}`,
                 animationDelay: `${i * 40}ms`,
               }}
@@ -263,7 +263,7 @@ export default async function FleetDashboard(
         <OperationsControlCenter alerts={alerts} />
 
         {/* Bottom 3-column Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }}>
 
           {/* Status Breakdown */}
           <div className="card" style={{ overflow: "hidden" }}>
@@ -272,12 +272,12 @@ export default async function FleetDashboard(
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "14px 18px",
+                padding: "18px 24px",
                 borderBottom: "1px solid #E4E4E7",
               }}
             >
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>
                   Status Breakdown
                 </p>
                 <p style={{ fontSize: 12, marginTop: 2, color: "#A1A1AA" }}>
@@ -288,7 +288,7 @@ export default async function FleetDashboard(
                 {allVehiclesCount} total
               </span>
             </div>
-            <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
               {statusCounts.map(({ status, count }) => {
                 const meta = STATUS_META[status] ?? STATUS_META.RETIRED;
                 const pct = allVehiclesCount > 0 ? Math.round((count / allVehiclesCount) * 100) : 0;
@@ -318,7 +318,7 @@ export default async function FleetDashboard(
             </div>
 
             {/* Recent Vehicles */}
-            <div style={{ padding: "0 18px 16px" }}>
+            <div style={{ padding: "0 24px 20px" }}>
               <p
                 style={{
                   fontSize: 11,
@@ -342,7 +342,7 @@ export default async function FleetDashboard(
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "space-between",
-                        padding: "8px 10px",
+                        padding: "11px 12px",
                         borderRadius: 8,
                       }}
                     >
@@ -380,12 +380,12 @@ export default async function FleetDashboard(
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "14px 18px",
+                padding: "18px 24px",
                 borderBottom: "1px solid #E4E4E7",
               }}
             >
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>
                   Maintenance
                 </p>
                 <p style={{ fontSize: 12, marginTop: 2, color: "#A1A1AA" }}>
@@ -415,7 +415,7 @@ export default async function FleetDashboard(
                       <div
                         key={v.id}
                         className="table-row-hover"
-                        style={{ padding: "12px 18px", borderBottom: "1px solid #F4F4F5" }}
+                        style={{ padding: "16px 24px", borderBottom: "1px solid #F4F4F5" }}
                       >
                         <div style={{ display: "flex", alignItems: "start", gap: 10 }}>
                           <div
@@ -463,12 +463,12 @@ export default async function FleetDashboard(
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
-                padding: "14px 18px",
+                padding: "18px 24px",
                 borderBottom: "1px solid #E4E4E7",
               }}
             >
               <div>
-                <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>
                   Recent Trips
                 </p>
                 <p style={{ fontSize: 12, marginTop: 2, color: "#A1A1AA" }}>
@@ -494,8 +494,8 @@ export default async function FleetDashboard(
                       style={{
                         display: "flex",
                         alignItems: "center",
-                        gap: 10,
-                        padding: "10px 18px",
+                        gap: 12,
+                        padding: "14px 24px",
                         borderBottom: "1px solid #F4F4F5",
                       }}
                     >
