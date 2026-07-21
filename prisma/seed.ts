@@ -25,7 +25,7 @@ async function main() {
   const password = await bcrypt.hash('demo1234', 12);
   const users = await prisma.user.createMany({
     data: [
-      { name: 'Arjun Mehta', email: 'fleet@transitops.in', passwordHash: password, role: Role.FLEET_MANAGER },
+      { name: 'Pratham Khawani', email: 'fleet@transitops.in', passwordHash: password, role: Role.FLEET_MANAGER },
       { name: 'Priya Sharma', email: 'dispatch@transitops.in', passwordHash: password, role: Role.DISPATCHER },
       { name: 'Rajesh Patel', email: 'safety@transitops.in', passwordHash: password, role: Role.SAFETY_OFFICER },
       { name: 'Kavya Desai', email: 'finance@transitops.in', passwordHash: password, role: Role.FINANCIAL_ANALYST },
