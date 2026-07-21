@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, AlertTriangle } from "lucide-react";
+import { AlertTriangle, AlertCircle, Info, X } from "lucide-react";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -28,7 +28,8 @@ export function ConfirmDialog({
 
   if (!open) return null;
 
-  const confirmBg = variant === "danger" ? "#dc2626" : variant === "warning" ? "#d97706" : "#2563eb";
+  const isDanger = variant === "danger";
+  const isWarning = variant === "warning";
 
   async function handleConfirm() {
     setLoading(true);
@@ -40,35 +41,61 @@ export function ConfirmDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.4)" }} onClick={onCancel} />
-      <div className="relative bg-white rounded-xl shadow-xl p-6 w-full max-w-sm mx-4" style={{ border: "1px solid #e2e8f0" }}>
-        <div className="flex items-start gap-3 mb-4">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: variant === "danger" ? "#fef2f2" : variant === "warning" ? "#fffbeb" : "#eff6ff" }}>
-            <AlertTriangle className="w-4 h-4"
-              style={{ color: variant === "danger" ? "#dc2626" : variant === "warning" ? "#d97706" : "#2563eb" }} />
+    <div className="modal-overlay">
+      <div className="modal-box" style={{ maxWidth: 480 }}>
+        <div className="modal-header">
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div
+              style={{
+                width: 34,
+                height: 34,
+                borderRadius: 10,
+                background: isDanger ? "#FEF2F2" : isWarning ? "#FFFBEB" : "#EFF6FF",
+                border: `1px solid ${isDanger ? "#FEE2E2" : isWarning ? "#FDE68A" : "#DBEAFE"}`,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >
+              {isDanger ? (
+                <AlertCircle className="w-4 h-4 text-red-600" />
+              ) : isWarning ? (
+                <AlertTriangle className="w-4 h-4 text-amber-600" />
+              ) : (
+                <Info className="w-4 h-4 text-blue-600" />
+              )}
+            </div>
+            <div>
+              <h3 className="modal-title">{title}</h3>
+              <p style={{ fontSize: 12, color: "#71717A", marginTop: 1 }}>Confirmation Required</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold" style={{ color: "#0f172a" }}>{title}</h3>
-            <p className="text-sm mt-1" style={{ color: "#64748b" }}>{description}</p>
-          </div>
-        </div>
-        <div className="flex gap-2 justify-end">
           <button
             onClick={onCancel}
-            className="px-3.5 py-2 rounded-lg text-sm font-medium border transition-colors hover:bg-slate-50"
-            style={{ borderColor: "#e2e8f0", color: "#374151" }}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
           >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="modal-body" style={{ padding: "20px 24px" }}>
+          <p style={{ fontSize: 13.5, color: "#3F3F46", lineHeight: 1.5 }}>
+            {description}
+          </p>
+        </div>
+
+        <div className="modal-footer" style={{ padding: "16px 24px" }}>
+          <button onClick={onCancel} className="btn btn-ghost">
             {cancelLabel}
           </button>
           <button
             onClick={handleConfirm}
             disabled={loading}
-            className="px-3.5 py-2 rounded-lg text-sm font-medium text-white transition-opacity disabled:opacity-60"
-            style={{ background: confirmBg }}
+            className={isDanger ? "btn btn-danger" : isWarning ? "btn btn-primary" : "btn btn-primary"}
+            style={isWarning ? { background: "#D97706" } : undefined}
           >
-            {loading ? "..." : confirmLabel}
+            {loading ? "Processing..." : confirmLabel}
           </button>
         </div>
       </div>

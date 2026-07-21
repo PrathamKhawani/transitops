@@ -2,7 +2,8 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, CheckCircle, AlertTriangle, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle, AlertTriangle, Clock, ShieldCheck } from "lucide-react";
+import { PageHeader } from "@/components/layout/AppHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { formatDate, formatCurrency } from "@/lib/utils";
 
@@ -18,14 +19,23 @@ interface DriverDetail {
 }
 
 function LicenseBadge({ state }: { state: string }) {
-  const cfg = state === "VALID"
-    ? { bg: "#f0fdf4", color: "#16a34a", icon: <CheckCircle className="w-3.5 h-3.5" />, label: "Valid" }
-    : state === "EXPIRING_SOON"
-    ? { bg: "#fffbeb", color: "#d97706", icon: <Clock className="w-3.5 h-3.5" />, label: "Expiring Soon" }
-    : { bg: "#fef2f2", color: "#dc2626", icon: <AlertTriangle className="w-3.5 h-3.5" />, label: "Expired" };
+  if (state === "VALID") {
+    return (
+      <span className="chip chip-green" style={{ fontWeight: 600 }}>
+        <CheckCircle className="w-3.5 h-3.5" /> License Valid
+      </span>
+    );
+  }
+  if (state === "EXPIRING_SOON") {
+    return (
+      <span className="chip chip-amber" style={{ fontWeight: 600 }}>
+        <Clock className="w-3.5 h-3.5" /> Expiring Soon
+      </span>
+    );
+  }
   return (
-    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium" style={{ background: cfg.bg, color: cfg.color }}>
-      {cfg.icon} {cfg.label}
+    <span className="chip chip-red" style={{ fontWeight: 600 }}>
+      <AlertTriangle className="w-3.5 h-3.5" /> License Expired
     </span>
   );
 }
@@ -43,95 +53,168 @@ export default function DriverDetailPage({ params }: { params: Promise<{ id: str
       .catch(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="p-8 text-sm" style={{ color: "#64748b" }}>Loading driver...</div>;
-  if (!driver) return <div className="p-8 text-sm text-red-500">Driver not found</div>;
+  if (loading) {
+    return (
+      <div style={{ padding: "36px 44px" }}>
+        <div className="skeleton" style={{ height: 120, width: "100%", marginBottom: 20 }} />
+        <div className="skeleton" style={{ height: 300, width: "100%" }} />
+      </div>
+    );
+  }
+
+  if (!driver) {
+    return (
+      <div style={{ padding: "36px 44px" }}>
+        <div className="card" style={{ padding: 40, textAlign: "center" }}>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "#DC2626" }}>Driver Record Not Found</p>
+          <button onClick={() => router.push("/safety/drivers")} className="btn btn-ghost" style={{ marginTop: 16 }}>
+            Back to Drivers List
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const completedTrips = driver.trips.filter(t => t.status === "COMPLETED");
   const totalRevenue = completedTrips.reduce((s, t) => s + t.revenue, 0);
 
-  // Score gauge color
-  const scoreColor = driver.safetyScore >= 90 ? "#16a34a" : driver.safetyScore >= 75 ? "#d97706" : "#dc2626";
-  const scoreArc = (driver.safetyScore / 100) * 180;
+  const scoreColor = driver.safetyScore >= 90 ? "#10B981" : driver.safetyScore >= 75 ? "#D97706" : "#DC2626";
 
   return (
-    <div className="p-6 max-w-4xl">
-      <button onClick={() => router.back()} className="flex items-center gap-1.5 text-xs mb-5" style={{ color: "#64748b" }}>
-        <ArrowLeft className="w-3.5 h-3.5" /> Back to Drivers
-      </button>
+    <div style={{ padding: "36px 44px", display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* Back button & PageHeader */}
+      <div>
+        <button
+          onClick={() => router.back()}
+          className="btn btn-ghost btn-sm"
+          style={{ marginBottom: 16, display: "inline-flex", alignItems: "center", gap: 6 }}
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Driver Roster
+        </button>
 
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-xl font-bold" style={{ color: "#0f172a" }}>{driver.name}</h1>
-            <StatusBadge status={driver.status} />
-            <LicenseBadge state={driver.licenseState} />
-          </div>
-          <p className="text-sm font-mono" style={{ color: "#64748b" }}>{driver.licenseNumber}</p>
-          <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>{driver.licenseCategory} · {driver.contactNumber}</p>
-        </div>
+        <PageHeader
+          title={driver.name}
+          description={`License: ${driver.licenseNumber} · Category: ${driver.licenseCategory} · Contact: ${driver.contactNumber}`}
+          breadcrumb="Safety Officer / Drivers / Details"
+          actions={
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <StatusBadge status={driver.status} />
+              <LicenseBadge state={driver.licenseState} />
+            </div>
+          }
+        />
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        {[
-          { label: "Safety Score", value: `${driver.safetyScore}/100`, color: scoreColor },
-          { label: "License Category", value: driver.licenseCategory },
-          { label: "License Expiry", value: formatDate(driver.licenseExpiryDate) },
-          { label: "Completed Trips", value: `${completedTrips.length} trips` },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="rounded-xl p-4" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-            <p className="text-xs" style={{ color: "#94a3b8" }}>{label}</p>
-            <p className="text-lg font-bold mt-0.5" style={{ color: color || "#0f172a" }}>{value}</p>
-          </div>
-        ))}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+        <div className="card" style={{ padding: "18px 20px", borderLeft: `3px solid ${scoreColor}` }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            Safety Score
+          </p>
+          <p style={{ fontSize: 28, fontWeight: 700, color: scoreColor, letterSpacing: "-0.04em", lineHeight: 1 }}>
+            {driver.safetyScore}<span style={{ fontSize: 14, color: "#A1A1AA", fontWeight: 400 }}>/100</span>
+          </p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>
+            {driver.safetyScore >= 90 ? "Excellent safety record" : driver.safetyScore >= 75 ? "Good record" : "Needs safety review"}
+          </p>
+        </div>
+
+        <div className="card" style={{ padding: "18px 20px", borderLeft: "3px solid #3B82F6" }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            License Category
+          </p>
+          <p style={{ fontSize: 24, fontWeight: 700, color: "#18181B", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            {driver.licenseCategory}
+          </p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>Commercial Transport</p>
+        </div>
+
+        <div className="card" style={{ padding: "18px 20px", borderLeft: `3px solid ${driver.licenseState === "EXPIRED" ? "#DC2626" : driver.licenseState === "EXPIRING_SOON" ? "#D97706" : "#10B981"}` }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            License Expiry
+          </p>
+          <p style={{ fontSize: 20, fontWeight: 700, color: "#18181B", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+            {formatDate(driver.licenseExpiryDate)}
+          </p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>
+            Status: {driver.licenseState.replace("_", " ")}
+          </p>
+        </div>
+
+        <div className="card" style={{ padding: "18px 20px", borderLeft: "3px solid #10B981" }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            Total Revenue Generated
+          </p>
+          <p style={{ fontSize: 24, fontWeight: 700, color: "#10B981", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            {formatCurrency(totalRevenue)}
+          </p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>{completedTrips.length} completed trips</p>
+        </div>
       </div>
 
-      {/* License compliance alert */}
+      {/* Compliance Alert Banners */}
       {driver.licenseState === "EXPIRED" && (
-        <div className="flex items-center gap-3 p-4 rounded-xl mb-5" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
-          <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+        <div className="card" style={{ padding: "16px 20px", background: "#FEF2F2", borderColor: "#FEE2E2", display: "flex", alignItems: "center", gap: 12 }}>
+          <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold" style={{ color: "#dc2626" }}>License Expired</p>
-            <p className="text-xs mt-0.5" style={{ color: "#b91c1c" }}>This driver cannot be assigned to any trips until license is renewed.</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#DC2626" }}>License Expired — Immediate Action Required</p>
+            <p style={{ fontSize: 12, color: "#991B1B", marginTop: 2 }}>This driver is automatically blocked from trip dispatch until valid license renewal is confirmed.</p>
           </div>
         </div>
       )}
       {driver.licenseState === "EXPIRING_SOON" && (
-        <div className="flex items-center gap-3 p-4 rounded-xl mb-5" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
-          <Clock className="w-5 h-5 text-yellow-500 flex-shrink-0" />
+        <div className="card" style={{ padding: "16px 20px", background: "#FFFBEB", borderColor: "#FDE68A", display: "flex", alignItems: "center", gap: 12 }}>
+          <Clock className="w-5 h-5 text-amber-600 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold" style={{ color: "#d97706" }}>License Expiring Soon</p>
-            <p className="text-xs mt-0.5" style={{ color: "#b45309" }}>License expires {formatDate(driver.licenseExpiryDate)}. Renewal recommended before dispatch.</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: "#D97706" }}>License Expiring Soon</p>
+            <p style={{ fontSize: 12, color: "#92400E", marginTop: 2 }}>License expires on {formatDate(driver.licenseExpiryDate)}. Schedule renewal before next dispatch assignment.</p>
           </div>
         </div>
       )}
 
-      {/* Trip History */}
-      <div>
-        <p className="text-sm font-semibold mb-3" style={{ color: "#0f172a" }}>Trip History ({driver.trips.length})</p>
-        {driver.trips.length === 0 ? (
-          <div className="rounded-xl p-8 text-center text-sm" style={{ background: "#f8fafc", border: "1px solid #e2e8f0", color: "#94a3b8" }}>No trips assigned</div>
-        ) : (
-          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
-            <table className="w-full text-sm">
-              <thead style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                <tr>{["Trip Code", "Route", "Vehicle", "Revenue", "Status", "Date"].map(h => <th key={h} className="px-4 py-3 text-xs font-medium text-left" style={{ color: "#64748b" }}>{h}</th>)}</tr>
-              </thead>
-              <tbody>
-                {driver.trips.map((t, i) => (
-                  <tr key={t.id} style={{ borderTop: i > 0 ? "1px solid #f1f5f9" : "none" }}>
-                    <td className="px-4 py-3 font-mono text-xs" style={{ color: "#475569" }}>{t.tripCode}</td>
-                    <td className="px-4 py-3 text-xs">{t.source} → {t.destination}</td>
-                    <td className="px-4 py-3 text-xs">{t.vehicle.name}<br /><span style={{ color: "#94a3b8" }}>{t.vehicle.registrationNumber}</span></td>
-                    <td className="px-4 py-3 text-xs">{formatCurrency(t.revenue)}</td>
-                    <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "#94a3b8" }}>{formatDate(t.completedAt || t.dispatchedAt || "")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* Driver Trip History Table */}
+      <div className="card" style={{ overflow: "hidden" }}>
+        <div className="card-header">
+          <div>
+            <p className="card-header-title">Assigned Trip History</p>
+            <p className="card-header-sub">Lifetime dispatch records & performance</p>
           </div>
-        )}
+          <span className="chip chip-slate">{driver.trips.length} trips</span>
+        </div>
+
+        <div style={{ overflowX: "auto" }}>
+          <table className="data-table" style={{ fontSize: 13 }}>
+            <thead>
+              <tr>
+                {["Trip Code", "Route", "Vehicle", "Revenue", "Status", "Date"].map(h => (
+                  <th key={h} className="th-cell">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {driver.trips.map(t => (
+                <tr key={t.id} className="table-row-hover">
+                  <td className="td-cell" style={{ fontFamily: "monospace", color: "#3B82F6", fontWeight: 600 }}>{t.tripCode}</td>
+                  <td className="td-cell" style={{ fontWeight: 500, color: "#09090B" }}>{t.source} → {t.destination}</td>
+                  <td className="td-cell">
+                    <p style={{ fontWeight: 500, color: "#09090B" }}>{t.vehicle.name}</p>
+                    <p style={{ fontSize: 11, color: "#A1A1AA", fontFamily: "monospace" }}>{t.vehicle.registrationNumber}</p>
+                  </td>
+                  <td className="td-cell" style={{ fontWeight: 600, color: "#10B981" }}>{formatCurrency(t.revenue)}</td>
+                  <td className="td-cell"><StatusBadge status={t.status} /></td>
+                  <td className="td-cell" style={{ color: "#71717A" }}>{formatDate(t.completedAt || t.dispatchedAt || "")}</td>
+                </tr>
+              ))}
+              {driver.trips.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: "48px 16px", textAlign: "center", color: "#A1A1AA" }}>
+                    No trips assigned to this driver yet
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -381,78 +381,78 @@ export default function TripsPage() {
       {/* ── Trip Detail Drawer ── */}
       {selectedTrip && (
         <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.3)" }} onClick={() => setSelectedTrip(null)} />
-          <div className="relative bg-white w-full max-w-sm h-full overflow-y-auto shadow-xl" style={{ borderLeft: "1px solid #e2e8f0" }}>
-            <div className="px-5 py-5" style={{ borderBottom: "1px solid #f1f5f9" }}>
+          <div className="absolute inset-0" style={{ background: "rgba(9, 9, 11, 0.6)", backdropFilter: "blur(4px)" }} onClick={() => setSelectedTrip(null)} />
+          <div className="relative bg-white w-full max-w-sm h-full overflow-y-auto shadow-2xl" style={{ borderLeft: "1px solid #E4E4E7" }}>
+            <div className="px-6 py-5" style={{ borderBottom: "1px solid #E4E4E7", background: "#FAFAFA" }}>
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-mono" style={{ color: "#64748b" }}>{selectedTrip.tripCode}</p>
-                  <h3 className="text-sm font-semibold mt-0.5" style={{ color: "#0f172a" }}>{selectedTrip.source} → {selectedTrip.destination}</h3>
+                  <span className="chip chip-blue" style={{ fontFamily: "monospace", fontSize: 11 }}>{selectedTrip.tripCode}</span>
+                  <h3 className="text-base font-semibold mt-2" style={{ color: "#09090B" }}>{selectedTrip.source} → {selectedTrip.destination}</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <StatusBadge status={selectedTrip.status} />
-                  <button onClick={() => setSelectedTrip(null)}><X className="w-4 h-4 text-slate-400" /></button>
+                  <button onClick={() => setSelectedTrip(null)} className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100"><X className="w-5 h-5" /></button>
                 </div>
               </div>
             </div>
 
             {/* Lifecycle Timeline */}
-            <div className="px-5 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#64748b" }}>Timeline</p>
-              <div className="space-y-2">
+            <div className="px-6 py-4" style={{ borderBottom: "1px solid #E4E4E7" }}>
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3 text-gray-500">Dispatch Lifecycle Timeline</p>
+              <div className="space-y-3">
                 {[
                   { label: "Created", time: selectedTrip.createdAt, done: true },
                   { label: "Dispatched", time: selectedTrip.dispatchedAt, done: !!selectedTrip.dispatchedAt },
                   { label: "Completed", time: selectedTrip.completedAt, done: !!selectedTrip.completedAt },
                 ].map((step) => (
-                  <div key={step.label} className="flex items-center gap-2.5">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: step.done ? "#22c55e" : "#e2e8f0" }} />
+                  <div key={step.label} className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: step.done ? "#10B981" : "#E4E4E7" }} />
                     <div>
-                      <p className="text-xs font-medium" style={{ color: step.done ? "#0f172a" : "#94a3b8" }}>{step.label}</p>
-                      {step.time && <p className="text-xs" style={{ color: "#94a3b8" }}>{formatDateTime(step.time)}</p>}
+                      <p className="text-xs font-semibold" style={{ color: step.done ? "#09090B" : "#A1A1AA" }}>{step.label}</p>
+                      {step.time && <p className="text-xs text-gray-400">{formatDateTime(step.time)}</p>}
                     </div>
                   </div>
                 ))}
                 {selectedTrip.status === "CANCELLED" && (
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: "#ef4444" }} />
-                    <p className="text-xs font-medium text-red-500">Cancelled</p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 bg-red-500" />
+                    <p className="text-xs font-semibold text-red-600">Trip Cancelled</p>
                   </div>
                 )}
               </div>
             </div>
 
             {/* Trip Details */}
-            <div className="px-5 py-4 space-y-4">
+            <div className="px-6 py-4 space-y-3.5">
               {[
-                { label: "Vehicle", value: `${selectedTrip.vehicle.name} (${selectedTrip.vehicle.registrationNumber})` },
-                { label: "Driver", value: selectedTrip.driver.name },
+                { label: "Assigned Vehicle", value: `${selectedTrip.vehicle.name} (${selectedTrip.vehicle.registrationNumber})` },
+                { label: "Assigned Driver", value: selectedTrip.driver.name },
                 { label: "Cargo Weight", value: `${selectedTrip.cargoWeight}T` },
                 { label: "Capacity Utilization", value: `${Math.round((selectedTrip.cargoWeight / selectedTrip.vehicle.maximumLoadCapacity) * 100)}%` },
                 { label: "Planned Distance", value: `${selectedTrip.plannedDistance} km` },
                 { label: "Actual Distance", value: selectedTrip.actualDistance ? `${selectedTrip.actualDistance} km` : "—" },
                 { label: "Initial Odometer", value: `${selectedTrip.initialOdometer.toLocaleString("en-IN")} km` },
                 { label: "Final Odometer", value: selectedTrip.finalOdometer ? `${selectedTrip.finalOdometer.toLocaleString("en-IN")} km` : "—" },
-                { label: "Revenue", value: formatCurrency(selectedTrip.revenue) },
+                { label: "Trip Revenue", value: formatCurrency(selectedTrip.revenue) },
                 { label: "Fuel Consumed", value: selectedTrip.fuelConsumed ? `${selectedTrip.fuelConsumed}L` : "—" },
               ].map((item) => (
                 <div key={item.label}>
-                  <p className="text-xs" style={{ color: "#94a3b8" }}>{item.label}</p>
-                  <p className="text-sm font-medium mt-0.5" style={{ color: "#0f172a" }}>{item.value}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider text-gray-400">{item.label}</p>
+                  <p className="text-sm font-medium mt-0.5" style={{ color: "#09090B" }}>{item.value}</p>
                 </div>
               ))}
             </div>
 
             {/* Actions in drawer */}
             {["DRAFT", "DISPATCHED"].includes(selectedTrip.status) && (
-              <div className="px-5 py-4 flex gap-2" style={{ borderTop: "1px solid #f1f5f9" }}>
+              <div className="px-6 py-4 flex gap-2" style={{ borderTop: "1px solid #E4E4E7", background: "#FAFAFA" }}>
                 {selectedTrip.status === "DRAFT" && (
-                  <button onClick={() => { setSelectedTrip(null); setDispatchId(selectedTrip.id); }} className="flex-1 py-2 rounded-lg text-xs font-medium text-white" style={{ background: "#2563eb" }}>Dispatch</button>
+                  <button onClick={() => { setSelectedTrip(null); setDispatchId(selectedTrip.id); }} className="btn btn-primary flex-1">Dispatch Trip</button>
                 )}
                 {selectedTrip.status === "DISPATCHED" && (
-                  <button onClick={() => { setSelectedTrip(null); setShowCompleteForm(selectedTrip.id); }} className="flex-1 py-2 rounded-lg text-xs font-medium text-white" style={{ background: "#16a34a" }}>Complete</button>
+                  <button onClick={() => { setSelectedTrip(null); setShowCompleteForm(selectedTrip.id); }} className="btn btn-primary flex-1" style={{ background: "#059669" }}>Complete Trip</button>
                 )}
-                <button onClick={() => { setSelectedTrip(null); setCancelId(selectedTrip.id); }} className="flex-1 py-2 rounded-lg text-xs font-medium text-white" style={{ background: "#dc2626" }}>Cancel</button>
+                <button onClick={() => { setSelectedTrip(null); setCancelId(selectedTrip.id); }} className="btn btn-danger">Cancel Trip</button>
               </div>
             )}
           </div>

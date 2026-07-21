@@ -2,10 +2,10 @@
 
 import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { ArrowLeft, Truck, Wrench, Fuel, Receipt } from "lucide-react";
+import { PageHeader } from "@/components/layout/AppHeader";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { formatCurrency, formatDate, formatDateTime, formatNumber } from "@/lib/utils";
+import { formatCurrency, formatDate, formatNumber } from "@/lib/utils";
 
 interface VehicleDetail {
   id: string; registrationNumber: string; name: string; model: string; type: string;
@@ -32,166 +32,245 @@ export default function VehicleDetailPage({ params }: { params: Promise<{ id: st
       .catch(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div className="p-8 text-sm" style={{ color: "#64748b" }}>Loading vehicle details...</div>;
-  if (!vehicle) return <div className="p-8 text-sm text-red-500">Vehicle not found</div>;
+  if (loading) {
+    return (
+      <div style={{ padding: "36px 44px" }}>
+        <div className="skeleton" style={{ height: 120, width: "100%", marginBottom: 20 }} />
+        <div className="skeleton" style={{ height: 300, width: "100%" }} />
+      </div>
+    );
+  }
+
+  if (!vehicle) {
+    return (
+      <div style={{ padding: "36px 44px" }}>
+        <div className="card" style={{ padding: 40, textAlign: "center" }}>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "#DC2626" }}>Vehicle Not Found</p>
+          <button onClick={() => router.push("/fleet/vehicles")} className="btn btn-ghost" style={{ marginTop: 16 }}>
+            Back to Vehicles
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const totalRevenue = vehicle.trips.filter(t => t.status === "COMPLETED").reduce((s, t) => s + t.revenue, 0);
   const totalExpenses = vehicle.expenses.reduce((s, e) => s + e.amount, 0) + vehicle.maintenanceLogs.reduce((s, m) => s + m.cost, 0);
   const totalFuelCost = vehicle.fuelLogs.reduce((s, f) => s + f.cost, 0);
-  const completedTrips = vehicle.trips.filter(t => t.status === "COMPLETED").length;
 
   const TABS: { key: Tab; label: string; icon: React.ReactNode; count: number }[] = [
     { key: "trips", label: "Trips", icon: <Truck className="w-3.5 h-3.5" />, count: vehicle.trips.length },
-    { key: "maintenance", label: "Maintenance", icon: <Wrench className="w-3.5 h-3.5" />, count: vehicle.maintenanceLogs.length },
+    { key: "maintenance", label: "Maintenance Orders", icon: <Wrench className="w-3.5 h-3.5" />, count: vehicle.maintenanceLogs.length },
     { key: "fuel", label: "Fuel Logs", icon: <Fuel className="w-3.5 h-3.5" />, count: vehicle.fuelLogs.length },
-    { key: "expenses", label: "Expenses", icon: <Receipt className="w-3.5 h-3.5" />, count: vehicle.expenses.length },
+    { key: "expenses", label: "Other Expenses", icon: <Receipt className="w-3.5 h-3.5" />, count: vehicle.expenses.length },
   ];
 
   return (
-    <div className="p-6 max-w-5xl">
-      {/* Back + Header */}
-      <button onClick={() => router.back()} className="flex items-center gap-1.5 text-xs mb-5" style={{ color: "#64748b" }}>
-        <ArrowLeft className="w-3.5 h-3.5" /> Back to Vehicles
-      </button>
+    <div style={{ padding: "36px 44px", display: "flex", flexDirection: "column", gap: 24 }}>
+      {/* Page Header with Back Button */}
+      <div>
+        <button
+          onClick={() => router.back()}
+          className="btn btn-ghost btn-sm"
+          style={{ marginBottom: 16, display: "inline-flex", alignItems: "center", gap: 6 }}
+        >
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Vehicles Roster
+        </button>
 
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-xl font-bold" style={{ color: "#0f172a" }}>{vehicle.name}</h1>
-            <StatusBadge status={vehicle.status} />
-          </div>
-          <p className="text-sm font-mono" style={{ color: "#64748b" }}>{vehicle.registrationNumber}</p>
-          <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>{vehicle.model} · {vehicle.type} · {vehicle.region}</p>
-        </div>
+        <PageHeader
+          title={`${vehicle.name} (${vehicle.registrationNumber})`}
+          description={`${vehicle.model} · ${vehicle.type} · Region: ${vehicle.region}`}
+          breadcrumb="Fleet / Vehicles / Details"
+          actions={<StatusBadge status={vehicle.status} />}
+        />
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
-        {[
-          { label: "Max Capacity", value: `${vehicle.maximumLoadCapacity}T` },
-          { label: "Odometer", value: `${formatNumber(vehicle.odometer)} km` },
-          { label: "Total Revenue", value: formatCurrency(totalRevenue) },
-          { label: "Total Expenses", value: formatCurrency(totalExpenses + totalFuelCost) },
-        ].map(({ label, value }) => (
-          <div key={label} className="rounded-xl p-4" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-            <p className="text-xs" style={{ color: "#94a3b8" }}>{label}</p>
-            <p className="text-lg font-bold mt-0.5" style={{ color: "#0f172a" }}>{value}</p>
-          </div>
-        ))}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+        <div className="card" style={{ padding: "18px 20px", borderLeft: "3px solid #3B82F6" }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            Max Load Capacity
+          </p>
+          <p style={{ fontSize: 24, fontWeight: 700, color: "#18181B", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            {vehicle.maximumLoadCapacity} Tons
+          </p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>Acq. Cost: {formatCurrency(vehicle.acquisitionCost)}</p>
+        </div>
+
+        <div className="card" style={{ padding: "18px 20px", borderLeft: "3px solid #8B5CF6" }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            Odometer Reading
+          </p>
+          <p style={{ fontSize: 24, fontWeight: 700, color: "#18181B", letterSpacing: "-0.03em", lineHeight: 1, fontFamily: "monospace" }}>
+            {formatNumber(vehicle.odometer)} km
+          </p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>Lifetime distance</p>
+        </div>
+
+        <div className="card" style={{ padding: "18px 20px", borderLeft: "3px solid #10B981" }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            Total Revenue
+          </p>
+          <p style={{ fontSize: 24, fontWeight: 700, color: "#10B981", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            {formatCurrency(totalRevenue)}
+          </p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>{vehicle.trips.filter(t => t.status === "COMPLETED").length} completed trips</p>
+        </div>
+
+        <div className="card" style={{ padding: "18px 20px", borderLeft: "3px solid #EF4444" }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>
+            Total Operating Cost
+          </p>
+          <p style={{ fontSize: 24, fontWeight: 700, color: "#18181B", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            {formatCurrency(totalExpenses + totalFuelCost)}
+          </p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>Fuel + Maintenance + Expenses</p>
+        </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-0.5 mb-4 rounded-lg p-1" style={{ background: "#f1f5f9" }}>
-        {TABS.map(t => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all"
-            style={{
-              background: tab === t.key ? "#fff" : "transparent",
-              color: tab === t.key ? "#0f172a" : "#64748b",
-              boxShadow: tab === t.key ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-            }}
-          >
-            {t.icon} {t.label} <span className="rounded-full px-1.5 text-xs" style={{ background: "#e2e8f0", color: "#64748b" }}>{t.count}</span>
-          </button>
-        ))}
+      {/* Tab Switcher Card */}
+      <div className="card" style={{ overflow: "hidden" }}>
+        <div style={{ padding: "12px 18px", borderBottom: "1px solid #E4E4E7", background: "#FAFAFA", display: "flex", gap: 8 }}>
+          {TABS.map(t => (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className="btn"
+              style={{
+                background: tab === t.key ? "#18181B" : "transparent",
+                color: tab === t.key ? "#FFFFFF" : "#52525B",
+                padding: "8px 16px",
+                fontSize: 13,
+                fontWeight: 500,
+                borderRadius: 8,
+              }}
+            >
+              {t.icon} {t.label}
+              <span
+                className="chip"
+                style={{
+                  marginLeft: 6,
+                  background: tab === t.key ? "rgba(255,255,255,0.2)" : "#F4F4F5",
+                  color: tab === t.key ? "#FFFFFF" : "#71717A",
+                  padding: "1px 7px",
+                  fontSize: 11,
+                }}
+              >
+                {t.count}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div style={{ overflowX: "auto" }}>
+          {tab === "trips" && (
+            <table className="data-table" style={{ fontSize: 13 }}>
+              <thead>
+                <tr>
+                  {["Trip Code", "Route", "Driver", "Cargo Weight", "Revenue", "Status", "Date"].map(h => (
+                    <th key={h} className="th-cell">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {vehicle.trips.map(t => (
+                  <tr key={t.id} className="table-row-hover">
+                    <td className="td-cell" style={{ fontFamily: "monospace", color: "#3B82F6", fontWeight: 600 }}>{t.tripCode}</td>
+                    <td className="td-cell" style={{ fontWeight: 500, color: "#09090B" }}>{t.source} → {t.destination}</td>
+                    <td className="td-cell">{t.driver.name}</td>
+                    <td className="td-cell">{t.cargoWeight}T</td>
+                    <td className="td-cell" style={{ fontWeight: 600, color: "#10B981" }}>{formatCurrency(t.revenue)}</td>
+                    <td className="td-cell"><StatusBadge status={t.status} /></td>
+                    <td className="td-cell" style={{ color: "#71717A" }}>{formatDate(t.completedAt || t.dispatchedAt || "")}</td>
+                  </tr>
+                ))}
+                {vehicle.trips.length === 0 && (
+                  <tr><td colSpan={7} style={{ padding: "48px 16px", textAlign: "center", color: "#A1A1AA" }}>No trips assigned to this vehicle yet</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
+
+          {tab === "maintenance" && (
+            <table className="data-table" style={{ fontSize: 13 }}>
+              <thead>
+                <tr>
+                  {["Service Type", "Description", "Cost", "Start Date", "Completed Date", "Status"].map(h => (
+                    <th key={h} className="th-cell">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {vehicle.maintenanceLogs.map(m => (
+                  <tr key={m.id} className="table-row-hover">
+                    <td className="td-cell"><span className="chip chip-blue" style={{ fontWeight: 500 }}>{m.type}</span></td>
+                    <td className="td-cell" style={{ color: "#3F3F46" }}>{m.description}</td>
+                    <td className="td-cell" style={{ fontWeight: 600, color: "#09090B" }}>{formatCurrency(m.cost)}</td>
+                    <td className="td-cell">{formatDate(m.startDate)}</td>
+                    <td className="td-cell">{m.completedDate ? formatDate(m.completedDate) : "—"}</td>
+                    <td className="td-cell"><StatusBadge status={m.status} /></td>
+                  </tr>
+                ))}
+                {vehicle.maintenanceLogs.length === 0 && (
+                  <tr><td colSpan={6} style={{ padding: "48px 16px", textAlign: "center", color: "#A1A1AA" }}>No maintenance logs recorded</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
+
+          {tab === "fuel" && (
+            <table className="data-table" style={{ fontSize: 13 }}>
+              <thead>
+                <tr>
+                  {["Fill-Up Date", "Litres", "Cost", "Odometer", "Trip Ref"].map(h => (
+                    <th key={h} className="th-cell">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {vehicle.fuelLogs.map(f => (
+                  <tr key={f.id} className="table-row-hover">
+                    <td className="td-cell" style={{ fontWeight: 500 }}>{formatDate(f.date)}</td>
+                    <td className="td-cell" style={{ fontWeight: 600, color: "#09090B" }}>{f.liters}L</td>
+                    <td className="td-cell" style={{ fontWeight: 600, color: "#F97316" }}>{formatCurrency(f.cost)}</td>
+                    <td className="td-cell" style={{ fontFamily: "monospace" }}>{formatNumber(f.odometerReading)} km</td>
+                    <td className="td-cell" style={{ fontFamily: "monospace", color: "#71717A" }}>{f.trip?.tripCode || "—"}</td>
+                  </tr>
+                ))}
+                {vehicle.fuelLogs.length === 0 && (
+                  <tr><td colSpan={5} style={{ padding: "48px 16px", textAlign: "center", color: "#A1A1AA" }}>No fuel logs recorded</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
+
+          {tab === "expenses" && (
+            <table className="data-table" style={{ fontSize: 13 }}>
+              <thead>
+                <tr>
+                  {["Date", "Expense Type", "Description", "Amount"].map(h => (
+                    <th key={h} className="th-cell">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {vehicle.expenses.map(ex => (
+                  <tr key={ex.id} className="table-row-hover">
+                    <td className="td-cell">{formatDate(ex.date)}</td>
+                    <td className="td-cell"><span className="chip chip-purple">{ex.type}</span></td>
+                    <td className="td-cell" style={{ color: "#3F3F46" }}>{ex.description}</td>
+                    <td className="td-cell" style={{ fontWeight: 600, color: "#09090B" }}>{formatCurrency(ex.amount)}</td>
+                  </tr>
+                ))}
+                {vehicle.expenses.length === 0 && (
+                  <tr><td colSpan={4} style={{ padding: "48px 16px", textAlign: "center", color: "#A1A1AA" }}>No general expenses recorded</td></tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>
-
-      {/* Tab Content */}
-      {tab === "trips" && (
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
-          {vehicle.trips.length === 0 ? <p className="p-6 text-sm text-center" style={{ color: "#94a3b8" }}>No trips yet</p> : (
-            <table className="w-full text-sm">
-              <thead style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                <tr>{["Trip Code","Route","Driver","Cargo","Revenue","Status","Date"].map(h => <th key={h} className="px-4 py-3 text-xs font-medium text-left" style={{ color: "#64748b" }}>{h}</th>)}</tr>
-              </thead>
-              <tbody>
-                {vehicle.trips.map((t, i) => (
-                  <tr key={t.id} style={{ borderTop: i > 0 ? "1px solid #f1f5f9" : "none" }}>
-                    <td className="px-4 py-3 font-mono text-xs" style={{ color: "#475569" }}>{t.tripCode}</td>
-                    <td className="px-4 py-3 text-xs">{t.source} → {t.destination}</td>
-                    <td className="px-4 py-3 text-xs">{t.driver.name}</td>
-                    <td className="px-4 py-3 text-xs">{t.cargoWeight}T</td>
-                    <td className="px-4 py-3 text-xs">{formatCurrency(t.revenue)}</td>
-                    <td className="px-4 py-3"><StatusBadge status={t.status} /></td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "#94a3b8" }}>{formatDate(t.completedAt || t.dispatchedAt || "")}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {tab === "maintenance" && (
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
-          {vehicle.maintenanceLogs.length === 0 ? <p className="p-6 text-sm text-center" style={{ color: "#94a3b8" }}>No maintenance logs</p> : (
-            <table className="w-full text-sm">
-              <thead style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                <tr>{["Type","Description","Cost","Start Date","Completed","Status"].map(h => <th key={h} className="px-4 py-3 text-xs font-medium text-left" style={{ color: "#64748b" }}>{h}</th>)}</tr>
-              </thead>
-              <tbody>
-                {vehicle.maintenanceLogs.map((m, i) => (
-                  <tr key={m.id} style={{ borderTop: i > 0 ? "1px solid #f1f5f9" : "none" }}>
-                    <td className="px-4 py-3 text-xs font-medium" style={{ color: "#0f172a" }}>{m.type}</td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "#64748b", maxWidth: "200px" }}>{m.description}</td>
-                    <td className="px-4 py-3 text-xs">{formatCurrency(m.cost)}</td>
-                    <td className="px-4 py-3 text-xs">{formatDate(m.startDate)}</td>
-                    <td className="px-4 py-3 text-xs">{m.completedDate ? formatDate(m.completedDate) : "—"}</td>
-                    <td className="px-4 py-3"><StatusBadge status={m.status} /></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {tab === "fuel" && (
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
-          {vehicle.fuelLogs.length === 0 ? <p className="p-6 text-sm text-center" style={{ color: "#94a3b8" }}>No fuel logs</p> : (
-            <table className="w-full text-sm">
-              <thead style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                <tr>{["Date","Litres","Cost","Odometer","Trip"].map(h => <th key={h} className="px-4 py-3 text-xs font-medium text-left" style={{ color: "#64748b" }}>{h}</th>)}</tr>
-              </thead>
-              <tbody>
-                {vehicle.fuelLogs.map((f, i) => (
-                  <tr key={f.id} style={{ borderTop: i > 0 ? "1px solid #f1f5f9" : "none" }}>
-                    <td className="px-4 py-3 text-xs">{formatDate(f.date)}</td>
-                    <td className="px-4 py-3 text-xs">{f.liters}L</td>
-                    <td className="px-4 py-3 text-xs">{formatCurrency(f.cost)}</td>
-                    <td className="px-4 py-3 text-xs">{formatNumber(f.odometerReading)} km</td>
-                    <td className="px-4 py-3 text-xs font-mono" style={{ color: "#64748b" }}>{f.trip?.tripCode || "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
-
-      {tab === "expenses" && (
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
-          {vehicle.expenses.length === 0 ? <p className="p-6 text-sm text-center" style={{ color: "#94a3b8" }}>No expenses</p> : (
-            <table className="w-full text-sm">
-              <thead style={{ background: "#f8fafc", borderBottom: "1px solid #e2e8f0" }}>
-                <tr>{["Date","Type","Description","Amount"].map(h => <th key={h} className="px-4 py-3 text-xs font-medium text-left" style={{ color: "#64748b" }}>{h}</th>)}</tr>
-              </thead>
-              <tbody>
-                {vehicle.expenses.map((ex, i) => (
-                  <tr key={ex.id} style={{ borderTop: i > 0 ? "1px solid #f1f5f9" : "none" }}>
-                    <td className="px-4 py-3 text-xs">{formatDate(ex.date)}</td>
-                    <td className="px-4 py-3"><span className="px-2 py-0.5 rounded text-xs font-medium" style={{ background: "#f1f5f9", color: "#475569" }}>{ex.type}</span></td>
-                    <td className="px-4 py-3 text-xs" style={{ color: "#64748b" }}>{ex.description}</td>
-                    <td className="px-4 py-3 text-xs font-medium" style={{ color: "#0f172a" }}>{formatCurrency(ex.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
     </div>
   );
 }
