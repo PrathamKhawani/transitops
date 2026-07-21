@@ -2,12 +2,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Users, Edit2, X } from "lucide-react";
+import { Plus, X, User, Edit2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/AppHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
-import { formatDate } from "@/lib/utils";
-import { isExpired, isExpiringSoon } from "@/lib/utils";
+import { formatDate, isExpired, isExpiringSoon } from "@/lib/utils";
 
 interface Driver {
   id: string;
@@ -20,35 +19,16 @@ interface Driver {
   status: string;
 }
 
-const columns: Column<Record<string, unknown>>[] = [
-  { key: "name", label: "Name", sortable: true },
-  { key: "licenseNumber", label: "License No." },
-  { key: "licenseCategory", label: "Category" },
-  {
-    key: "licenseExpiryDate", label: "License Expiry",
-    render: (v) => {
-      const expired = isExpired(v as string);
-      const expiring = isExpiringSoon(v as string);
-      return (
-        <span style={{ color: expired ? "#dc2626" : expiring ? "#d97706" : "#374151", fontWeight: expired || expiring ? 500 : 400 }}>
-          {formatDate(v as string)}
-          {expired && " ⚠️"}{expiring && !expired && " ⏳"}
-        </span>
-      );
-    }
-  },
-  { key: "contactNumber", label: "Contact" },
-  { key: "safetyScore", label: "Safety Score", sortable: true, render: (v) => <span style={{ color: Number(v) >= 90 ? "#16a34a" : Number(v) >= 75 ? "#d97706" : "#dc2626", fontWeight: 600 }}>{Number(v)}/100</span> },
-  { key: "status", label: "Status", render: (v) => <StatusBadge status={v as string} /> },
-];
+const emptyForm = { name: "", licenseNumber: "", licenseCategory: "HMV", licenseExpiryDate: "", contactNumber: "", safetyScore: "100", status: "AVAILABLE" };
 
 export default function FleetDriversPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("");
+  const [showForm, setShowForm] = useState(false);
   const [editDriver, setEditDriver] = useState<Driver | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ status: "AVAILABLE", safetyScore: "100" });
+  const [form, setForm] = useState({ ...emptyForm });
 
   const fetchDrivers = useCallback(async () => {
     setLoading(true);
@@ -62,45 +42,78 @@ export default function FleetDriversPage() {
 
   useEffect(() => { fetchDrivers(); }, [fetchDrivers]);
 
+  function openCreate() { setForm({ ...emptyForm }); setEditDriver(null); setShowForm(true); }
   function openEdit(d: Driver) {
     setEditDriver(d);
-    setForm({ status: d.status, safetyScore: String(d.safetyScore) });
+    setForm({
+      name: d.name,
+      licenseNumber: d.licenseNumber,
+      licenseCategory: d.licenseCategory,
+      licenseExpiryDate: d.licenseExpiryDate ? d.licenseExpiryDate.split("T")[0] : "",
+      contactNumber: d.contactNumber,
+      safetyScore: String(d.safetyScore),
+      status: d.status,
+    });
+    setShowForm(true);
   }
 
-  async function handleUpdate(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!editDriver) return;
     setSubmitting(true);
-    const res = await fetch(`/api/drivers/${editDriver.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
-    });
+    const url = editDriver ? `/api/drivers/${editDriver.id}` : "/api/drivers";
+    const method = editDriver ? "PATCH" : "POST";
+    const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
     const data = await res.json();
     if (!res.ok) toast.error(data.error);
-    else { toast.success("Driver updated"); setEditDriver(null); fetchDrivers(); }
+    else { toast.success(editDriver ? "Driver updated successfully" : "Driver added successfully"); setShowForm(false); fetchDrivers(); }
     setSubmitting(false);
   }
 
-  const columnsWithActions: Column<Record<string, unknown>>[] = [
-    ...columns,
+  const columns: Column<Record<string, unknown>>[] = [
+    { key: "name", label: "Driver", sortable: true, render: (v, row) => (
+      <div>
+        <p className="text-sm font-semibold" style={{ color: "#09090B" }}>{v as string}</p>
+        <p className="text-xs font-mono" style={{ color: "#A1A1AA", marginTop: 1 }}>{row.licenseNumber as string}</p>
+      </div>
+    )},
+    { key: "licenseCategory", label: "Category", render: (v) => <span className="chip chip-blue" style={{ fontWeight: 500 }}>{v as string}</span> },
     {
-      key: "_actions",
-      label: "",
-      className: "w-16",
+      key: "licenseExpiryDate", label: "License Expiry",
+      render: (v) => {
+        const expired = isExpired(v as string);
+        const expiring = isExpiringSoon(v as string);
+        return (
+          <span style={{ color: expired ? "#DC2626" : expiring ? "#D97706" : "#3F3F46", fontWeight: expired || expiring ? 600 : 400 }}>
+            {formatDate(v as string)}
+            {expired && " ⚠️ OVERDUE"}{expiring && !expired && " ⏳ EXPIRING"}
+          </span>
+        );
+      }
+    },
+    { key: "contactNumber", label: "Contact" },
+    {
+      key: "safetyScore", label: "Safety Score", sortable: true,
+      render: (v) => (
+        <span style={{ color: Number(v) >= 90 ? "#059669" : Number(v) >= 75 ? "#D97706" : "#DC2626", fontWeight: 700 }}>
+          {Number(v)}/100
+        </span>
+      )
+    },
+    { key: "status", label: "Status", render: (v) => <StatusBadge status={v as string} /> },
+    {
+      key: "_actions", label: "Actions", className: "text-right",
       render: (_, row) => {
         const d = row as unknown as Driver;
         return (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              openEdit(d);
-            }}
-            className="p-1.5 rounded hover:bg-blue-50"
-            title="Edit status"
-          >
-            <Edit2 className="w-3.5 h-3.5 text-blue-500" />
-          </button>
+          <div className="flex gap-2 justify-end">
+            <button
+              onClick={(e) => { e.stopPropagation(); openEdit(d); }}
+              className="btn btn-ghost btn-sm"
+              title="Edit Driver"
+            >
+              <Edit2 className="w-3.5 h-3.5" /> Edit
+            </button>
+          </div>
         );
       },
     },
@@ -108,41 +121,162 @@ export default function FleetDriversPage() {
 
   return (
     <div style={{ padding: "36px 44px" }}>
-      <PageHeader title="Drivers" description="View fleet drivers and license status" breadcrumb="Fleet Manager" />
+      <PageHeader
+        title="Drivers"
+        description="Manage driver roster, licensing categories, safety records, and duty statuses"
+        breadcrumb="Fleet Manager"
+        actions={
+          <button onClick={openCreate} className="btn btn-primary btn-lg">
+            <Plus className="w-4 h-4" /> Add Driver
+          </button>
+        }
+      />
+
       <DataTable
-        columns={columnsWithActions}
+        columns={columns}
         data={drivers as unknown as Record<string, unknown>[]}
         loading={loading}
-        searchPlaceholder="Search drivers..."
+        searchPlaceholder="Search drivers by name, license number, or contact..."
+        searchKeys={["name", "licenseNumber", "contactNumber"]}
         filters={
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 outline-none" style={{ borderColor: "#e2e8f0", color: "#374151" }}>
-            {["", "AVAILABLE", "ON_TRIP", "OFF_DUTY", "SUSPENDED"].map((s) => <option key={s} value={s}>{s || "All Status"}</option>)}
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 150 }}>
+            {["", "AVAILABLE", "ON_TRIP", "OFF_DUTY", "SUSPENDED"].map((s) => <option key={s} value={s}>{s || "All Statuses"}</option>)}
           </select>
         }
       />
 
-      {editDriver && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setEditDriver(null)} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm mx-4" style={{ border: "1px solid #e2e8f0" }}>
-            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "#0f172a" }}>Update Driver — {editDriver.name}</h3>
-              <button onClick={() => setEditDriver(null)}><X className="w-4 h-4 text-slate-400" /></button>
+      {/* Add / Edit Driver Modal — Standardized to Maintenance Modal Design */}
+      {showForm && (
+        <div className="modal-overlay">
+          <div className="modal-box modal-box-lg">
+            <div className="modal-header">
+              <div>
+                <h3 className="modal-title">{editDriver ? `Edit Driver — ${editDriver.name}` : "Add New Driver"}</h3>
+                <p style={{ fontSize: 12, color: "#71717A", marginTop: 2 }}>
+                  {editDriver ? "Update license status, safety score, or duty status" : "Register a new commercial driver into the fleet roster"}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <form onSubmit={handleUpdate} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Status</label>
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
-                  {["AVAILABLE", "OFF_DUTY", "SUSPENDED"].map((s) => <option key={s}>{s}</option>)}
-                </select>
+
+            <form onSubmit={handleSubmit}>
+              <div className="modal-body">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Full Name *
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. Alex Fernandes"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="input-field"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      License Number *
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      disabled={!!editDriver}
+                      placeholder="e.g. GJ01XXYYYYY"
+                      value={form.licenseNumber}
+                      onChange={(e) => setForm({ ...form, licenseNumber: e.target.value })}
+                      className="input-field disabled:opacity-60 font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Contact Phone Number *
+                    </label>
+                    <input
+                      required
+                      type="tel"
+                      placeholder="e.g. 9876540000"
+                      value={form.contactNumber}
+                      onChange={(e) => setForm({ ...form, contactNumber: e.target.value })}
+                      className="input-field"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      License Category *
+                    </label>
+                    <select
+                      required
+                      value={form.licenseCategory}
+                      onChange={(e) => setForm({ ...form, licenseCategory: e.target.value })}
+                      className="input-field"
+                    >
+                      {["HMV", "LMV", "MMV", "TRANS"].map(c => <option key={c}>{c}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      License Expiry Date *
+                    </label>
+                    <input
+                      required
+                      type="date"
+                      value={form.licenseExpiryDate}
+                      onChange={(e) => setForm({ ...form, licenseExpiryDate: e.target.value })}
+                      className="input-field"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Safety Score (0 - 100) *
+                    </label>
+                    <input
+                      required
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder="95"
+                      value={form.safetyScore}
+                      onChange={(e) => setForm({ ...form, safetyScore: e.target.value })}
+                      className="input-field"
+                    />
+                  </div>
+                </div>
+
+                {editDriver && (
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Duty Status *
+                    </label>
+                    <select
+                      value={form.status}
+                      onChange={(e) => setForm({ ...form, status: e.target.value })}
+                      className="input-field"
+                    >
+                      {["AVAILABLE", "OFF_DUTY", "SUSPENDED"].map(s => <option key={s}>{s}</option>)}
+                    </select>
+                  </div>
+                )}
               </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Safety Score (0-100)</label>
-                <input type="number" min={0} max={100} value={form.safetyScore} onChange={(e) => setForm({ ...form, safetyScore: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
-              </div>
-              <div className="flex gap-2 justify-end pt-2">
-                <button type="button" onClick={() => setEditDriver(null)} className="px-4 py-2 rounded-lg text-sm border" style={{ borderColor: "#e2e8f0", color: "#374151" }}>Cancel</button>
-                <button type="submit" disabled={submitting} className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60" style={{ background: "#2563eb" }}>{submitting ? "Saving..." : "Update"}</button>
+
+              <div className="modal-footer">
+                <button type="button" onClick={() => setShowForm(false)} className="btn btn-ghost">Cancel</button>
+                <button type="submit" disabled={submitting} className="btn btn-primary">
+                  <User className="w-4 h-4" />
+                  {submitting ? "Saving Driver..." : editDriver ? "Update Driver" : "Add Driver"}
+                </button>
               </div>
             </form>
           </div>

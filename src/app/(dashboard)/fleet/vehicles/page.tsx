@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { Plus, X, ExternalLink } from "lucide-react";
+import { Plus, X, ExternalLink, Truck } from "lucide-react";
 import { PageHeader } from "@/components/layout/AppHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -48,7 +48,19 @@ export default function VehiclesPage() {
   useEffect(() => { fetchVehicles(); }, [fetchVehicles]);
 
   function openCreate() { setForm({ ...emptyForm }); setEditVehicle(null); setShowForm(true); }
-  function openEdit(v: Vehicle) { setForm({ registrationNumber: v.registrationNumber, name: v.name, model: v.model, type: v.type, maximumLoadCapacity: String(v.maximumLoadCapacity), acquisitionCost: String(v.acquisitionCost), region: v.region }); setEditVehicle(v); setShowForm(true); }
+  function openEdit(v: Vehicle) {
+    setForm({
+      registrationNumber: v.registrationNumber,
+      name: v.name,
+      model: v.model,
+      type: v.type,
+      maximumLoadCapacity: String(v.maximumLoadCapacity),
+      acquisitionCost: String(v.acquisitionCost),
+      region: v.region
+    });
+    setEditVehicle(v);
+    setShowForm(true);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -58,7 +70,7 @@ export default function VehiclesPage() {
     const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
     const data = await res.json();
     if (!res.ok) toast.error(data.error);
-    else { toast.success(editVehicle ? "Vehicle updated" : "Vehicle added"); setShowForm(false); fetchVehicles(); }
+    else { toast.success(editVehicle ? "Vehicle updated successfully" : "Vehicle added successfully"); setShowForm(false); fetchVehicles(); }
     setSubmitting(false);
   }
 
@@ -73,26 +85,26 @@ export default function VehiclesPage() {
   const columns: Column<Record<string, unknown>>[] = [
     { key: "name", label: "Vehicle", sortable: true, render: (v, row) => (
       <div>
-        <p className="text-sm font-medium" style={{ color: "#0f172a" }}>{v as string}</p>
-        <p className="text-xs" style={{ color: "#94a3b8" }}>{row.registrationNumber as string}</p>
+        <p className="text-sm font-semibold" style={{ color: "#09090B" }}>{v as string}</p>
+        <p className="text-xs font-mono" style={{ color: "#A1A1AA", marginTop: 1 }}>{row.registrationNumber as string}</p>
       </div>
     )},
     { key: "model", label: "Model" },
-    { key: "type", label: "Type", sortable: true },
+    { key: "type", label: "Type", sortable: true, render: (v) => <span className="chip chip-blue" style={{ fontWeight: 500 }}>{v as string}</span> },
     { key: "region", label: "Region", sortable: true },
     { key: "maximumLoadCapacity", label: "Capacity", render: (v) => `${v}T` },
     { key: "odometer", label: "Odometer", render: (v) => `${formatNumber(v as number)} km` },
     { key: "acquisitionCost", label: "Acq. Cost", render: (v) => formatCurrency(v as number) },
     { key: "status", label: "Status", render: (v) => <StatusBadge status={v as string} /> },
     {
-      key: "_actions", label: "", className: "w-20",
+      key: "_actions", label: "Actions", className: "text-right",
       render: (_, row) => {
         const v = row as unknown as Vehicle;
         return (
-          <div className="flex gap-1 justify-end">
-            <button onClick={(e) => { e.stopPropagation(); router.push(`/fleet/vehicles/${v.id}`); }} className="p-1.5 rounded hover:bg-slate-50" title="Details"><ExternalLink className="w-3.5 h-3.5 text-slate-400" /></button>
-            {v.status !== "RETIRED" && <button onClick={(e) => { e.stopPropagation(); openEdit(v); }} className="p-1.5 rounded hover:bg-blue-50 text-xs font-medium" style={{ color: "#2563eb" }}>Edit</button>}
-            {!["ON_TRIP", "RETIRED"].includes(v.status) && <button onClick={(e) => { e.stopPropagation(); setRetireId(v.id); }} className="p-1.5 rounded hover:bg-red-50 text-xs font-medium" style={{ color: "#dc2626" }}>Retire</button>}
+          <div className="flex gap-2 justify-end">
+            <button onClick={(e) => { e.stopPropagation(); router.push(`/fleet/vehicles/${v.id}`); }} className="btn btn-ghost btn-sm" title="View details"><ExternalLink className="w-3.5 h-3.5" /> Details</button>
+            {v.status !== "RETIRED" && <button onClick={(e) => { e.stopPropagation(); openEdit(v); }} className="btn btn-blue-soft btn-sm">Edit</button>}
+            {!["ON_TRIP", "RETIRED"].includes(v.status) && <button onClick={(e) => { e.stopPropagation(); setRetireId(v.id); }} className="btn btn-danger btn-sm">Retire</button>}
           </div>
         );
       }
@@ -103,10 +115,10 @@ export default function VehiclesPage() {
     <div style={{ padding: "36px 44px" }}>
       <PageHeader
         title="Vehicles"
-        description="Manage fleet vehicles, assignments and status"
+        description="Manage fleet vehicles, registrations, specifications, and status"
         breadcrumb="Fleet Manager"
         actions={
-          <button onClick={openCreate} className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-white" style={{ background: "#2563eb" }}>
+          <button onClick={openCreate} className="btn btn-primary btn-lg">
             <Plus className="w-4 h-4" /> Add Vehicle
           </button>
         }
@@ -116,18 +128,18 @@ export default function VehiclesPage() {
         columns={columns}
         data={vehicles as unknown as Record<string, unknown>[]}
         loading={loading}
-        searchPlaceholder="Search vehicles..."
+        searchPlaceholder="Search vehicles by name, registration, model, or region..."
         searchKeys={["name", "registrationNumber", "model", "region"]}
         filters={
           <div className="flex gap-3">
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 130 }}>
-              {STATUSES.map(s => <option key={s} value={s}>{s || "All Status"}</option>)}
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 140 }}>
+              {STATUSES.map(s => <option key={s} value={s}>{s || "All Statuses"}</option>)}
             </select>
-            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 120 }}>
+            <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 130 }}>
               <option value="">All Types</option>
               {VEHICLE_TYPES.map(t => <option key={t}>{t}</option>)}
             </select>
-            <select value={regionFilter} onChange={(e) => setRegionFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 130 }}>
+            <select value={regionFilter} onChange={(e) => setRegionFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 140 }}>
               <option value="">All Regions</option>
               {REGIONS.map(r => <option key={r}>{r}</option>)}
             </select>
@@ -135,45 +147,139 @@ export default function VehiclesPage() {
         }
       />
 
-      {/* Add / Edit Modal */}
+      {/* Add / Edit Vehicle Modal — Standardized to Maintenance Modal Design */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setShowForm(false)} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto" style={{ border: "1px solid #e2e8f0" }}>
-            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "#0f172a" }}>{editVehicle ? "Edit Vehicle" : "Add Vehicle"}</h3>
-              <button onClick={() => setShowForm(false)}><X className="w-4 h-4 text-slate-400" /></button>
+        <div className="modal-overlay">
+          <div className="modal-box modal-box-lg">
+            <div className="modal-header">
+              <div>
+                <h3 className="modal-title">{editVehicle ? "Edit Vehicle Details" : "Add New Vehicle"}</h3>
+                <p style={{ fontSize: 12, color: "#71717A", marginTop: 2 }}>
+                  {editVehicle ? `Updating vehicle ${editVehicle.name} (${editVehicle.registrationNumber})` : "Register a new vehicle into the depot fleet roster"}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: "Registration Number *", key: "registrationNumber", placeholder: "GJ01VN0005", disabled: !!editVehicle },
-                  { label: "Vehicle Name *", key: "name", placeholder: "Van-05" },
-                  { label: "Model *", key: "model", placeholder: "Tata Ace Gold" },
-                  { label: "Max Load Capacity (T) *", key: "maximumLoadCapacity", type: "number", placeholder: "0.5" },
-                  { label: "Acquisition Cost (₹) *", key: "acquisitionCost", type: "number", placeholder: "650000" },
-                ].map(({ label, key, type, placeholder, disabled }) => (
-                  <div key={key}>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>{label}</label>
-                    <input required type={type || "text"} step="any" disabled={disabled} placeholder={placeholder} value={(form as Record<string, string>)[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50" style={{ borderColor: "#e2e8f0" }} />
+
+            <form onSubmit={handleSubmit}>
+              <div className="modal-body">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Registration Number *
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      disabled={!!editVehicle}
+                      placeholder="e.g. GJ01VN0005"
+                      value={form.registrationNumber}
+                      onChange={(e) => setForm({ ...form, registrationNumber: e.target.value })}
+                      className="input-field disabled:opacity-60 font-mono"
+                    />
                   </div>
-                ))}
-                <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Type *</label>
-                  <select required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
-                    {VEHICLE_TYPES.map(t => <option key={t}>{t}</option>)}
-                  </select>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Vehicle Name / Code *
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. Van-05"
+                      value={form.name}
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      className="input-field"
+                    />
+                  </div>
                 </div>
-                <div className="col-span-2">
-                  <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Region *</label>
-                  <select required value={form.region} onChange={(e) => setForm({ ...form, region: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Model *
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      placeholder="e.g. Tata Ace Gold"
+                      value={form.model}
+                      onChange={(e) => setForm({ ...form, model: e.target.value })}
+                      className="input-field"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Vehicle Type *
+                    </label>
+                    <select
+                      required
+                      value={form.type}
+                      onChange={(e) => setForm({ ...form, type: e.target.value })}
+                      className="input-field"
+                    >
+                      {VEHICLE_TYPES.map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Max Load Capacity (Tons) *
+                    </label>
+                    <input
+                      required
+                      type="number"
+                      step="0.01"
+                      min="0.1"
+                      placeholder="0.5"
+                      value={form.maximumLoadCapacity}
+                      onChange={(e) => setForm({ ...form, maximumLoadCapacity: e.target.value })}
+                      className="input-field"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                      Acquisition Cost (₹) *
+                    </label>
+                    <input
+                      required
+                      type="number"
+                      min="0"
+                      placeholder="650000"
+                      value={form.acquisitionCost}
+                      onChange={(e) => setForm({ ...form, acquisitionCost: e.target.value })}
+                      className="input-field"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">
+                    Depot Region / Hub *
+                  </label>
+                  <select
+                    required
+                    value={form.region}
+                    onChange={(e) => setForm({ ...form, region: e.target.value })}
+                    className="input-field"
+                  >
                     {REGIONS.map(r => <option key={r}>{r}</option>)}
                   </select>
                 </div>
               </div>
-              <div className="flex gap-2 justify-end mt-5">
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg text-sm border" style={{ borderColor: "#e2e8f0", color: "#374151" }}>Cancel</button>
-                <button type="submit" disabled={submitting} className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60" style={{ background: "#2563eb" }}>{submitting ? "Saving..." : editVehicle ? "Update" : "Add Vehicle"}</button>
+
+              <div className="modal-footer">
+                <button type="button" onClick={() => setShowForm(false)} className="btn btn-ghost">Cancel</button>
+                <button type="submit" disabled={submitting} className="btn btn-primary">
+                  <Truck className="w-4 h-4" />
+                  {submitting ? "Saving Vehicle..." : editVehicle ? "Update Vehicle" : "Add Vehicle"}
+                </button>
               </div>
             </form>
           </div>
@@ -183,8 +289,8 @@ export default function VehiclesPage() {
       <ConfirmDialog
         open={!!retireId}
         title="Retire Vehicle"
-        description="The vehicle will be marked as RETIRED and removed from dispatch. This cannot be undone."
-        confirmLabel="Retire"
+        description="The vehicle will be marked as RETIRED and removed from dispatch roster. This action can be audited."
+        confirmLabel="Retire Vehicle"
         variant="danger"
         onConfirm={() => handleRetire(retireId!)}
         onCancel={() => setRetireId(null)}
