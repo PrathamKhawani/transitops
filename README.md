@@ -55,7 +55,7 @@ To test the role-based access control matrix, log in with any of the following s
 
 | Operational Role | Email Address | Assigned Name | Primary Dashboard Views |
 | :--- | :--- | :--- | :--- |
-| **Fleet Manager** | `fleet@transitops.in` | Arjun Mehta | Fleet Dashboard, Vehicle & Driver Roster, Role Approvals |
+| **Fleet Manager** | `fleet@transitops.in` | Pratham Khawani | Fleet Dashboard, Vehicle & Driver Roster, Role Approvals |
 | **Dispatcher** | `dispatch@transitops.in` | Priya Sharma | Smart Dispatch Command, Route Operations, Trip Creation |
 | **Safety Officer** | `safety@transitops.in` | Rajesh Patel | Safety Overview, Driver Status, Compliance Audit Roster |
 | **Financial Analyst** | `finance@transitops.in` | Kavya Desai | Finance Overview, Cost Breakdown, Revenue Charts |
