@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Plus, X, Play, CheckCircle, XCircle } from "lucide-react";
+import { Plus, X, Play, CheckCircle, XCircle, Wrench } from "lucide-react";
 import { PageHeader } from "@/components/layout/AppHeader";
 import { DataTable, Column } from "@/components/shared/DataTable";
 import { StatusBadge } from "@/components/shared/StatusBadge";
@@ -88,44 +88,96 @@ export default function MaintenancePage() {
   }
 
   const columns: Column<Record<string, unknown>>[] = [
-    { key: "vehicle", label: "Vehicle", render: (v) => <span>{(v as {name:string}).name}<br /><span className="text-xs" style={{ color: "#94a3b8" }}>{(v as {registrationNumber:string}).registrationNumber}</span></span> },
-    { key: "type", label: "Type", sortable: true },
-    { key: "description", label: "Description" },
-    { key: "cost", label: "Cost", render: (v) => formatCurrency(v as number) },
-    { key: "startDate", label: "Start", render: (v) => formatDate(v as string) },
-    { key: "completedDate", label: "Completed", render: (v) => v ? formatDate(v as string) : "—" },
+    {
+      key: "vehicle",
+      label: "Vehicle",
+      render: (v) => (
+        <div>
+          <p style={{ fontSize: 13.5, fontWeight: 600, color: "#09090B" }}>{(v as { name: string }).name}</p>
+          <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 1, fontFamily: "monospace" }}>
+            {(v as { registrationNumber: string }).registrationNumber}
+          </p>
+        </div>
+      ),
+    },
+    {
+      key: "type",
+      label: "Service Type",
+      sortable: true,
+      render: (v) => (
+        <span className="chip chip-blue" style={{ fontWeight: 500 }}>
+          <Wrench style={{ width: 11, height: 11 }} /> {String(v)}
+        </span>
+      ),
+    },
+    {
+      key: "description",
+      label: "Description",
+      render: (v) => <span style={{ color: "#3F3F46" }}>{String(v)}</span>,
+    },
+    {
+      key: "cost",
+      label: "Cost",
+      sortable: true,
+      render: (v) => (
+        <span style={{ fontWeight: 600, color: "#09090B" }}>{formatCurrency(v as number)}</span>
+      ),
+    },
+    { key: "startDate", label: "Start Date", render: (v) => formatDate(v as string) },
+    { key: "completedDate", label: "Completed Date", render: (v) => v ? formatDate(v as string) : "—" },
     { key: "status", label: "Status", render: (v) => <StatusBadge status={v as string} /> },
     {
-      key: "_actions", label: "", className: "w-24",
+      key: "_actions",
+      label: "Actions",
+      className: "text-right",
       render: (_, row) => {
         const log = row as unknown as MaintenanceLog;
         return (
-          <div className="flex gap-1 justify-end">
+          <div className="flex gap-2 justify-end">
             {log.status === "SCHEDULED" && (
-              <button onClick={(e) => { e.stopPropagation(); setActionId(log.id); setAction("start"); }} className="p-1.5 rounded hover:bg-blue-50" title="Start"><Play className="w-3.5 h-3.5 text-blue-500" /></button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setActionId(log.id); setAction("start"); }}
+                className="btn btn-blue-soft btn-sm"
+                title="Start Service"
+              >
+                <Play className="w-3.5 h-3.5" /> Start
+              </button>
             )}
             {["SCHEDULED", "IN_PROGRESS"].includes(log.status) && (
-              <button onClick={(e) => { e.stopPropagation(); setActionId(log.id); setAction("complete"); setFinalCost(String(log.cost)); }} className="p-1.5 rounded hover:bg-green-50" title="Complete"><CheckCircle className="w-3.5 h-3.5 text-green-500" /></button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setActionId(log.id); setAction("complete"); setFinalCost(String(log.cost)); }}
+                className="btn btn-ghost btn-sm"
+                style={{ color: "#059669", background: "#ECFDF5", borderColor: "#D1FAE5" }}
+                title="Complete Service"
+              >
+                <CheckCircle className="w-3.5 h-3.5" /> Complete
+              </button>
             )}
             {!["COMPLETED", "CANCELLED"].includes(log.status) && (
-              <button onClick={(e) => { e.stopPropagation(); setActionId(log.id); setAction("cancel"); }} className="p-1.5 rounded hover:bg-red-50" title="Cancel"><XCircle className="w-3.5 h-3.5 text-red-400" /></button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setActionId(log.id); setAction("cancel"); }}
+                className="btn btn-danger btn-sm"
+                title="Cancel Service"
+              >
+                <XCircle className="w-3.5 h-3.5" /> Cancel
+              </button>
             )}
           </div>
         );
-      }
+      },
     },
   ];
 
   const currentLog = logs.find(l => l.id === actionId);
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader
-        title="Maintenance"
-        description="Schedule and track vehicle maintenance"
+        title="Maintenance Log"
+        description="Schedule, track, and audit vehicle service & repair records"
         breadcrumb="Fleet Manager"
         actions={
-          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-white" style={{ background: "#2563eb" }}>
+          <button onClick={() => setShowForm(true)} className="btn btn-primary btn-lg">
             <Plus className="w-4 h-4" /> Schedule Maintenance
           </button>
         }
@@ -135,96 +187,116 @@ export default function MaintenancePage() {
         columns={columns}
         data={logs.map(l => ({ ...l, _actions: null })) as unknown as Record<string, unknown>[]}
         loading={loading}
-        searchPlaceholder="Search maintenance..."
+        searchPlaceholder="Search maintenance records by vehicle or type..."
         filters={
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 outline-none" style={{ borderColor: "#e2e8f0", color: "#374151" }}>
-            {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s || "All Status"}</option>)}
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 150 }}>
+            {STATUS_OPTIONS.map(s => <option key={s} value={s}>{s || "All Statuses"}</option>)}
           </select>
         }
       />
 
       {/* Create Maintenance Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setShowForm(false)} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md mx-4" style={{ border: "1px solid #e2e8f0" }}>
-            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "#0f172a" }}>Schedule Maintenance</h3>
-              <button onClick={() => setShowForm(false)}><X className="w-4 h-4 text-slate-400" /></button>
+        <div className="modal-overlay">
+          <div className="modal-box modal-box-lg">
+            <div className="modal-header">
+              <div>
+                <h3 className="modal-title">Schedule Vehicle Maintenance</h3>
+                <p style={{ fontSize: 12, color: "#71717A", marginTop: 2 }}>Log a repair order or scheduled service item</p>
+              </div>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Vehicle *</label>
-                <select required value={form.vehicleId} onChange={(e) => setForm({ ...form, vehicleId: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
-                  <option value="">Select vehicle...</option>
-                  {vehicles.filter(v => !["ON_TRIP", "RETIRED"].includes(v.status)).map(v => (
-                    <option key={v.id} value={v.id}>{v.name} ({v.registrationNumber}) — {v.status}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Type *</label>
-                <select required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
-                  {MAINTENANCE_TYPES.map(t => <option key={t}>{t}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Description *</label>
-                <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} placeholder="Describe the maintenance work..." className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit}>
+              <div className="modal-body">
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Estimated Cost (₹) *</label>
-                  <input required type="number" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} placeholder="5000" className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Vehicle Target *</label>
+                  <select required value={form.vehicleId} onChange={(e) => setForm({ ...form, vehicleId: e.target.value })} className="input-field">
+                    <option value="">Select vehicle for maintenance...</option>
+                    {vehicles.filter(v => !["ON_TRIP", "RETIRED"].includes(v.status)).map(v => (
+                      <option key={v.id} value={v.id}>{v.name} ({v.registrationNumber}) — Status: {v.status}</option>
+                    ))}
+                  </select>
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Service Type *</label>
+                    <select required value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} className="input-field">
+                      {MAINTENANCE_TYPES.map(t => <option key={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Estimated Cost (₹) *</label>
+                    <input required type="number" min="0" value={form.cost} onChange={(e) => setForm({ ...form, cost: e.target.value })} placeholder="5000" className="input-field" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Start Date *</label>
+                    <input required type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="input-field" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Initial Status</label>
+                    <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="input-field">
+                      <option value="SCHEDULED">SCHEDULED — Keep Available for now</option>
+                      <option value="IN_PROGRESS">IN_PROGRESS — Move to IN_SHOP immediately</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Start Date *</label>
-                  <input required type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Service Notes & Description *</label>
+                  <textarea required value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Provide details regarding the maintenance work required..." className="input-field" />
                 </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Status</label>
-                <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
-                  <option value="SCHEDULED">SCHEDULED — Vehicle stays AVAILABLE</option>
-                  <option value="IN_PROGRESS">IN_PROGRESS — Vehicle set to IN_SHOP immediately</option>
-                </select>
+
                 {form.status === "IN_PROGRESS" && (
-                  <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: "#d97706" }}>
-                    ⚠️ Selecting IN_PROGRESS will atomically set the vehicle to IN_SHOP and remove it from dispatch
-                  </p>
+                  <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
+                    <span>⚠️</span>
+                    <span>Selecting <strong>IN_PROGRESS</strong> will automatically set the vehicle state to <strong>IN_SHOP</strong> and pause trip dispatching.</span>
+                  </div>
                 )}
               </div>
-              <div className="flex gap-2 justify-end pt-2">
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg text-sm border" style={{ borderColor: "#e2e8f0", color: "#374151" }}>Cancel</button>
-                <button type="submit" disabled={submitting} className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60" style={{ background: "#2563eb" }}>{submitting ? "Saving..." : "Create"}</button>
+
+              <div className="modal-footer">
+                <button type="button" onClick={() => setShowForm(false)} className="btn btn-ghost">Cancel</button>
+                <button type="submit" disabled={submitting} className="btn btn-primary">{submitting ? "Saving Record..." : "Schedule Maintenance"}</button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Complete — final cost modal */}
+      {/* Complete Maintenance Modal */}
       {action === "complete" && actionId && currentLog && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => { setActionId(null); setAction(null); }} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-sm mx-4" style={{ border: "1px solid #e2e8f0" }}>
-            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "#0f172a" }}>Complete Maintenance</h3>
-              <button onClick={() => { setActionId(null); setAction(null); }}><X className="w-4 h-4 text-slate-400" /></button>
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div className="modal-header">
+              <h3 className="modal-title">Complete Maintenance Order</h3>
+              <button onClick={() => { setActionId(null); setAction(null); }} className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100">
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <div className="p-6 space-y-4">
-              <p className="text-sm" style={{ color: "#374151" }}>
-                Completing <strong>{currentLog.type}</strong> on <strong>{currentLog.vehicle.name}</strong>.<br />
-                The vehicle will be set back to <strong>AVAILABLE</strong>.
+            <div className="modal-body">
+              <p className="text-sm text-gray-700 leading-relaxed">
+                Completing service order for <strong className="text-gray-900">{currentLog.vehicle.name}</strong> ({currentLog.type}).<br />
+                Upon completion, the vehicle status will automatically return to <strong className="text-emerald-700">AVAILABLE</strong> for dispatch.
               </p>
               <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Final Cost (₹)</label>
-                <input type="number" value={finalCost} onChange={(e) => setFinalCost(e.target.value)} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
+                <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">Final Audited Cost (₹) *</label>
+                <input type="number" value={finalCost} onChange={(e) => setFinalCost(e.target.value)} className="input-field" placeholder="Enter final cost" />
               </div>
-              <div className="flex gap-2 justify-end">
-                <button onClick={() => { setActionId(null); setAction(null); }} className="px-4 py-2 rounded-lg text-sm border" style={{ borderColor: "#e2e8f0", color: "#374151" }}>Cancel</button>
-                <button onClick={() => handleAction(actionId, "complete", { cost: Number(finalCost) })} className="px-4 py-2 rounded-lg text-sm font-medium text-white" style={{ background: "#16a34a" }}>Complete</button>
-              </div>
+            </div>
+            <div className="modal-footer">
+              <button onClick={() => { setActionId(null); setAction(null); }} className="btn btn-ghost">Cancel</button>
+              <button onClick={() => handleAction(actionId, "complete", { cost: Number(finalCost) })} className="btn btn-primary" style={{ background: "#059669" }}>
+                Complete & Release Vehicle
+              </button>
             </div>
           </div>
         </div>
@@ -232,8 +304,8 @@ export default function MaintenancePage() {
 
       <ConfirmDialog
         open={action === "start" && !!actionId}
-        title="Start Maintenance"
-        description={`${currentLog?.vehicle.name} will be set to IN_SHOP and will not appear in dispatch vehicle selection.`}
+        title="Start Maintenance Order"
+        description={`${currentLog?.vehicle.name} will be marked as IN_SHOP and hidden from dispatch roster.`}
         confirmLabel="Start Maintenance"
         variant="warning"
         onConfirm={() => handleAction(actionId!, "start")}
@@ -242,8 +314,8 @@ export default function MaintenancePage() {
 
       <ConfirmDialog
         open={action === "cancel" && !!actionId}
-        title="Cancel Maintenance"
-        description={`Cancel ${currentLog?.type} on ${currentLog?.vehicle.name}? If the vehicle is IN_SHOP, it will be returned to AVAILABLE.`}
+        title="Cancel Maintenance Order"
+        description={`Are you sure you want to cancel the maintenance record for ${currentLog?.vehicle.name}?`}
         confirmLabel="Cancel Maintenance"
         variant="danger"
         onConfirm={() => handleAction(actionId!, "cancel")}

@@ -26,42 +26,39 @@ function VehicleProfitabilityTable({
         </div>
         <ArrowUpDown className="w-4 h-4" style={{ color: "#94a3b8" }} />
       </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
+      <div style={{ overflowX: "auto" }}>
+        <table className="data-table" style={{ fontSize: 13 }}>
           <thead>
-            <tr style={{ background: "#fafafa", borderBottom: "1px solid #f1f5f9" }}>
+            <tr>
               {["Vehicle", "Revenue", "Fuel Cost", "Maintenance", "Other Exp.", "Total Cost", "Net Contribution", "ROI"].map(h => (
-                <th key={h} className="px-4 py-3 text-left font-semibold uppercase tracking-wide" style={{ color: "#64748b" }}>{h}</th>
+                <th key={h} className="th-cell">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {data.map((v, i) => (
-              <tr key={v.id} style={{ borderBottom: i < data.length - 1 ? "1px solid #f8fafc" : "none" }}>
-                <td className="px-4 py-3">
-                  <p className="font-medium" style={{ color: "#0f172a" }}>{v.name}</p>
-                  <p style={{ color: "#94a3b8" }}>{v.registrationNumber} · {v.type}</p>
+            {data.map((v) => (
+              <tr key={v.id} className="table-row-hover">
+                <td className="td-cell">
+                  <p style={{ fontWeight: 600, color: "#09090B" }}>{v.name}</p>
+                  <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 1, fontFamily: "monospace" }}>{v.registrationNumber} · {v.type}</p>
                 </td>
-                <td className="px-4 py-3 font-medium" style={{ color: "#16a34a" }}>{formatCurrency(v.revenue)}</td>
-                <td className="px-4 py-3" style={{ color: "#f97316" }}>{formatCurrency(v.fuelCost)}</td>
-                <td className="px-4 py-3" style={{ color: "#f59e0b" }}>{formatCurrency(v.maintenanceCost)}</td>
-                <td className="px-4 py-3" style={{ color: "#64748b" }}>{formatCurrency(v.otherExpenses)}</td>
-                <td className="px-4 py-3" style={{ color: "#dc2626" }}>{formatCurrency(v.totalCost)}</td>
-                <td className="px-4 py-3 font-semibold" style={{ color: v.netContribution >= 0 ? "#16a34a" : "#dc2626" }}>
+                <td className="td-cell" style={{ fontWeight: 600, color: "#10B981" }}>{formatCurrency(v.revenue)}</td>
+                <td className="td-cell" style={{ color: "#F97316" }}>{formatCurrency(v.fuelCost)}</td>
+                <td className="td-cell" style={{ color: "#F59E0B" }}>{formatCurrency(v.maintenanceCost)}</td>
+                <td className="td-cell" style={{ color: "#71717A" }}>{formatCurrency(v.otherExpenses)}</td>
+                <td className="td-cell" style={{ color: "#EF4444" }}>{formatCurrency(v.totalCost)}</td>
+                <td className="td-cell" style={{ fontWeight: 700, color: v.netContribution >= 0 ? "#10B981" : "#EF4444" }}>
                   {formatCurrency(v.netContribution)}
                 </td>
-                <td className="px-4 py-3">
-                  <span className="font-bold px-2 py-0.5 rounded text-xs" style={{
-                    background: v.roi >= 5 ? "#f0fdf4" : v.roi >= 0 ? "#fffbeb" : "#fef2f2",
-                    color: v.roi >= 5 ? "#16a34a" : v.roi >= 0 ? "#d97706" : "#dc2626",
-                  }}>
+                <td className="td-cell">
+                  <span className={v.roi >= 5 ? "chip chip-green" : v.roi >= 0 ? "chip chip-amber" : "chip chip-red"} style={{ fontWeight: 700 }}>
                     {v.roi}%
                   </span>
                 </td>
               </tr>
             ))}
             {data.length === 0 && (
-              <tr><td colSpan={8} className="px-4 py-8 text-center" style={{ color: "#94a3b8" }}>No data available</td></tr>
+              <tr><td colSpan={8} style={{ padding: "48px 16px", textAlign: "center", color: "#A1A1AA" }}>No data available</td></tr>
             )}
           </tbody>
         </table>
@@ -166,7 +163,7 @@ export default async function AnalyticsPage() {
   const avgFuelEff = totalFuel > 0 ? Math.round((totalDist / totalFuel) * 10) / 10 : null;
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader title="Finance Analytics" description="Vehicle profitability, fleet economics, and cost breakdowns — all from real DB data" breadcrumb="Financial Analyst" />
 
       {/* KPIs */}

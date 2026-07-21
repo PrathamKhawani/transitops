@@ -33,7 +33,7 @@ export default function DispatchVehiclesPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader title="Vehicle Availability" description="Check which vehicles are available for dispatch" breadcrumb="Dispatcher" />
       <DataTable loading={loading} columns={columns} data={vehicles as unknown as Record<string, unknown>[]} searchPlaceholder="Search vehicles..." />
     </div>

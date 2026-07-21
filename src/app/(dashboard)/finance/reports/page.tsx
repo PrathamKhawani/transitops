@@ -47,7 +47,7 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader title="Reports" description="Export real operational data as CSV for analysis" breadcrumb="Financial Analyst" />
 
       <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-5">
@@ -92,7 +92,7 @@ export default function ReportsPage() {
               </div>
             </div>
 
-            <button onClick={handleDownload} disabled={downloading} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60" style={{ background: "#2563eb" }}>
+            <button onClick={handleDownload} disabled={downloading} className="btn btn-primary w-full" style={{ justifyContent: "center" }}>
               <Download className="w-4 h-4" />
               {downloading ? "Preparing CSV..." : "Download CSV"}
             </button>

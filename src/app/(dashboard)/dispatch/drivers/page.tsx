@@ -66,13 +66,7 @@ export default function DispatchDriversPage() {
       key: "eligibility",
       label: "Eligibility",
       render: (v: unknown, row: any) => (
-        <span
-          className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold"
-          style={{
-            background: row.eligible ? "#f0fdf4" : "#fef2f2",
-            color: row.eligible ? "#16a34a" : "#dc2626",
-          }}
-        >
+        <span className={row.eligible ? "chip chip-green" : "chip chip-red"}>
           {v as string}
         </span>
       ),
@@ -80,7 +74,7 @@ export default function DispatchDriversPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader title="Driver Availability" description="Check which drivers are available for assignment" breadcrumb="Dispatcher" />
       <DataTable loading={loading} columns={columns} data={drivers as unknown as Record<string, unknown>[]} searchPlaceholder="Search drivers..." />
     </div>

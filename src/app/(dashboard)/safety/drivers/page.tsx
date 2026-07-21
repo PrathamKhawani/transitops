@@ -126,13 +126,13 @@ export default function DriversPage() {
   ];
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader
         title="Drivers & Compliance"
         description="Monitor driver licenses, safety scores and status"
         breadcrumb="Safety Officer"
         actions={
-          <button onClick={openCreate} className="flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium text-white" style={{ background: "#2563eb" }}>
+          <button onClick={openCreate} className="btn btn-primary btn-lg">
             <Plus className="w-4 h-4" /> Add Driver
           </button>
         }
@@ -169,11 +169,11 @@ export default function DriversPage() {
         searchPlaceholder="Search drivers..."
         searchKeys={["name", "licenseNumber", "contactNumber"]}
         filters={
-          <div className="flex gap-2">
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 outline-none" style={{ borderColor: "#e2e8f0", color: "#374151" }}>
+          <div style={{ display: "flex", gap: 8 }}>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 130 }}>
               {["", "AVAILABLE", "ON_TRIP", "OFF_DUTY", "SUSPENDED"].map(s => <option key={s} value={s}>{s || "All Status"}</option>)}
             </select>
-            <select value={licenseFilter} onChange={(e) => setLicenseFilter(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 outline-none" style={{ borderColor: "#e2e8f0", color: "#374151" }}>
+            <select value={licenseFilter} onChange={(e) => setLicenseFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 150 }}>
               <option value="">All Licenses</option>
               {LICENSE_STATES.map(l => <option key={l}>{l.replace("_", " ")}</option>)}
             </select>
@@ -183,37 +183,56 @@ export default function DriversPage() {
 
       {/* Add/Edit Modal */}
       {showForm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0" style={{ background: "rgba(0,0,0,0.4)" }} onClick={() => setShowForm(false)} />
-          <div className="relative bg-white rounded-xl shadow-xl w-full max-w-lg mx-4" style={{ border: "1px solid #e2e8f0" }}>
-            <div className="flex items-center justify-between px-6 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
-              <h3 className="text-sm font-semibold" style={{ color: "#0f172a" }}>{editDriver ? "Edit Driver" : "Add Driver"}</h3>
-              <button onClick={() => setShowForm(false)}><X className="w-4 h-4 text-slate-400" /></button>
+        <div className="modal-overlay">
+          <div className="modal-box">
+            <div className="modal-header">
+              <div>
+                <h3 className="modal-title">{editDriver ? "Edit Driver" : "Add Driver"}</h3>
+                <p style={{ fontSize: 12, color: "#71717A", marginTop: 2 }}>Enter the driver's license and contact details</p>
+              </div>
+              <button
+                onClick={() => setShowForm(false)}
+                className="p-1.5 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-            <form onSubmit={handleSubmit} className="p-6">
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { label: "Full Name *", key: "name", placeholder: "Alex Fernandes" },
-                  { label: "License Number *", key: "licenseNumber", placeholder: "GJ01XXYYYYY", disabled: !!editDriver },
-                  { label: "Contact Number *", key: "contactNumber", type: "tel", placeholder: "9876540000" },
-                  { label: "Safety Score (0-100)", key: "safetyScore", type: "number", placeholder: "95" },
-                  { label: "License Expiry Date *", key: "licenseExpiryDate", type: "date", placeholder: "" },
-                ].map(({ label, key, type, placeholder, disabled }) => (
-                  <div key={key}>
-                    <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>{label}</label>
-                    <input required={!label.includes("Safety")} type={type || "text"} disabled={disabled} placeholder={placeholder} value={(form as Record<string, string>)[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50" style={{ borderColor: "#e2e8f0" }} />
+            <form onSubmit={handleSubmit}>
+              <div className="modal-body">
+                <div className="grid grid-cols-2 gap-4">
+                  {[
+                    { label: "Full Name *", key: "name", placeholder: "Alex Fernandes" },
+                    { label: "License Number *", key: "licenseNumber", placeholder: "GJ01XXYYYYY", disabled: !!editDriver },
+                    { label: "Contact Number *", key: "contactNumber", type: "tel", placeholder: "9876540000" },
+                    { label: "Safety Score (0-100)", key: "safetyScore", type: "number", placeholder: "95" },
+                    { label: "License Expiry Date *", key: "licenseExpiryDate", type: "date", placeholder: "" },
+                  ].map(({ label, key, type, placeholder, disabled }) => (
+                    <div key={key}>
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">{label}</label>
+                      <input
+                        required={!label.includes("Safety")}
+                        type={type || "text"}
+                        disabled={disabled}
+                        placeholder={placeholder}
+                        value={(form as Record<string, string>)[key]}
+                        onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+                        className="input-field disabled:opacity-60"
+                      />
+                    </div>
+                  ))}
+                  <div>
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-gray-700 mb-1.5">License Category *</label>
+                    <select required value={form.licenseCategory} onChange={(e) => setForm({ ...form, licenseCategory: e.target.value })} className="input-field">
+                      {["HMV", "LMV", "MMV", "TRANS"].map(c => <option key={c}>{c}</option>)}
+                    </select>
                   </div>
-                ))}
-                <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>License Category *</label>
-                  <select required value={form.licenseCategory} onChange={(e) => setForm({ ...form, licenseCategory: e.target.value })} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
-                    {["HMV", "LMV", "MMV", "TRANS"].map(c => <option key={c}>{c}</option>)}
-                  </select>
                 </div>
               </div>
-              <div className="flex gap-2 justify-end mt-5">
-                <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 rounded-lg text-sm border" style={{ borderColor: "#e2e8f0", color: "#374151" }}>Cancel</button>
-                <button type="submit" disabled={submitting} className="px-4 py-2 rounded-lg text-sm font-medium text-white disabled:opacity-60" style={{ background: "#2563eb" }}>{submitting ? "Saving..." : editDriver ? "Update" : "Add Driver"}</button>
+              <div className="modal-footer">
+                <button type="button" onClick={() => setShowForm(false)} className="btn btn-ghost">Cancel</button>
+                <button type="submit" disabled={submitting} className="btn btn-primary">
+                  {submitting ? "Saving..." : editDriver ? "Update Driver" : "Add Driver"}
+                </button>
               </div>
             </form>
           </div>

@@ -1,5 +1,4 @@
 import { ReactNode } from "react";
-import { Bell, Search } from "lucide-react";
 
 interface AppHeaderProps {
   title: string;
@@ -10,11 +9,11 @@ interface AppHeaderProps {
 export function AppHeader({ title, subtitle, actions }: AppHeaderProps) {
   return (
     <header
-      className="flex items-center justify-between px-6"
+      className="flex items-center justify-between px-8"
       style={{
-        minHeight: "60px",
+        minHeight: "64px",
         background: "#FFFFFF",
-        borderBottom: "1px solid #E4ECFB",
+        borderBottom: "1px solid #E4E4E7",
         position: "sticky",
         top: 0,
         zIndex: 10,
@@ -23,18 +22,18 @@ export function AppHeader({ title, subtitle, actions }: AppHeaderProps) {
       <div>
         <h1
           className="font-semibold leading-tight"
-          style={{ fontSize: 15, color: "#0A1628", letterSpacing: "-0.02em" }}
+          style={{ fontSize: 16, color: "#09090B", letterSpacing: "-0.015em" }}
         >
           {title}
         </h1>
         {subtitle && (
-          <p className="text-xs mt-0.5" style={{ color: "#6B87B0" }}>
+          <p className="text-xs mt-0.5" style={{ color: "#71717A" }}>
             {subtitle}
           </p>
         )}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-3">
         {actions}
       </div>
     </header>
@@ -59,17 +58,51 @@ export function PageHeader({
   badgeColor = "#2563EB",
 }: PageHeaderProps) {
   return (
-    <div className="flex items-start justify-between mb-6">
-      <div>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "20px 24px",
+        background: "#FFFFFF",
+        borderRadius: "14px",
+        border: "1px solid #E4E4E7",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+        marginBottom: "28px",
+        gap: "16px",
+      }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
         {breadcrumb && (
-          <p className="text-xs mb-1" style={{ color: "#94A3B8" }}>
-            {breadcrumb}
-          </p>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 600,
+                color: "#2563EB",
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                background: "#EFF6FF",
+                padding: "2px 8px",
+                borderRadius: "4px",
+                border: "1px solid #DBEAFE",
+                display: "inline-block",
+              }}
+            >
+              {breadcrumb}
+            </span>
+          </div>
         )}
-        <div className="flex items-center gap-3">
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <h2
-            className="font-bold"
-            style={{ fontSize: 20, color: "#0A1628", letterSpacing: "-0.025em" }}
+            style={{
+              fontSize: 22,
+              fontWeight: 700,
+              color: "#09090B",
+              letterSpacing: "-0.025em",
+              lineHeight: 1.2,
+              margin: 0,
+            }}
           >
             {title}
           </h2>
@@ -77,10 +110,12 @@ export function PageHeader({
             <span
               className="chip"
               style={{
-                background: `${badgeColor}12`,
+                background: `${badgeColor}14`,
                 color: badgeColor,
-                border: `1px solid ${badgeColor}25`,
-                fontSize: 11,
+                border: `1px solid ${badgeColor}30`,
+                fontSize: 11.5,
+                fontWeight: 600,
+                padding: "3px 10px",
               }}
             >
               {badge}
@@ -88,13 +123,21 @@ export function PageHeader({
           )}
         </div>
         {description && (
-          <p className="text-sm mt-1" style={{ color: "#6B87B0" }}>
+          <p
+            style={{
+              fontSize: 13,
+              color: "#71717A",
+              marginTop: 4,
+              lineHeight: 1.5,
+              margin: "4px 0 0 0",
+            }}
+          >
             {description}
           </p>
         )}
       </div>
       {actions && (
-        <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
           {actions}
         </div>
       )}

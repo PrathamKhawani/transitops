@@ -125,8 +125,8 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ padding: "24px 32px", display: "flex", flexDirection: "column", gap: 20, background: "#FAFAFA", minHeight: "100vh" }}>
-      <PageHeader title="Settings" description="Company configuration and access control overview" breadcrumb="Settings" />
+    <div style={{ padding: "36px 44px", display: "flex", flexDirection: "column", gap: 20, background: "#FAFAFA", minHeight: "100vh" }}>
+      <PageHeader title="Settings" description="Company configuration, user management, and access control overview" breadcrumb="Settings" />
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         {/* Company Settings */}

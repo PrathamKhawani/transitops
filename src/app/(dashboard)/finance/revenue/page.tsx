@@ -36,22 +36,24 @@ export default async function RevenuePage() {
   ];
 
   return (
-    <div className="p-6">
-      <PageHeader title="Revenue Tracking" description="Revenue from all completed trips" breadcrumb="Financial Analyst" />
+    <div style={{ padding: "36px 44px" }}>
+      <PageHeader title="Revenue Tracking" description="Revenue generated from all completed trips" breadcrumb="Financial Analyst" />
 
-      <div className="grid grid-cols-3 gap-4 mb-6">
-        <div className="bg-white rounded-xl p-4" style={{ border: "1px solid #e2e8f0", borderTop: "3px solid #22c55e" }}>
-          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "#64748b" }}>Total Revenue</p>
-          <p className="text-xl font-bold mt-1" style={{ color: "#0f172a" }}>{formatCurrency(totalRevenue)}</p>
-          <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>{trips.length} completed trips</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 28 }}>
+        <div className="card" style={{ padding: "18px 20px", borderLeft: "3px solid #10B981" }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Total Revenue</p>
+          <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", letterSpacing: "-0.03em", lineHeight: 1 }}>{formatCurrency(totalRevenue)}</p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>{trips.length} completed trips</p>
         </div>
-        <div className="bg-white rounded-xl p-4" style={{ border: "1px solid #e2e8f0" }}>
-          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "#64748b" }}>Avg Per Trip</p>
-          <p className="text-xl font-bold mt-1" style={{ color: "#0f172a" }}>{formatCurrency(avgRevenue)}</p>
+        <div className="card" style={{ padding: "18px 20px", borderLeft: "3px solid #3B82F6" }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Avg Per Trip</p>
+          <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", letterSpacing: "-0.03em", lineHeight: 1 }}>{formatCurrency(avgRevenue)}</p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>Revenue per trip</p>
         </div>
-        <div className="bg-white rounded-xl p-4" style={{ border: "1px solid #e2e8f0" }}>
-          <p className="text-xs font-medium uppercase tracking-wide" style={{ color: "#64748b" }}>Highest Trip</p>
-          <p className="text-xl font-bold mt-1" style={{ color: "#0f172a" }}>{formatCurrency(maxRevenue)}</p>
+        <div className="card" style={{ padding: "18px 20px", borderLeft: "3px solid #F59E0B" }}>
+          <p style={{ fontSize: 11, fontWeight: 500, color: "#A1A1AA", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 8 }}>Highest Trip</p>
+          <p style={{ fontSize: 22, fontWeight: 700, color: "#18181B", letterSpacing: "-0.03em", lineHeight: 1 }}>{formatCurrency(maxRevenue)}</p>
+          <p style={{ fontSize: 12, marginTop: 6, color: "#A1A1AA" }}>Best single trip</p>
         </div>
       </div>
 

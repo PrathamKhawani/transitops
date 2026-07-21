@@ -95,7 +95,7 @@ export default function SmartDispatchPage() {
   const driver = selectedDriver ?? result?.recommended.driver ?? null;
 
   return (
-    <div className="p-6">
+    <div style={{ padding: "36px 44px" }}>
       <PageHeader
         title="Smart Dispatch"
         description="Deterministic recommendation engine — Capacity Fit 35% · Fuel Efficiency 30% · Maintenance Reliability 20% · Availability 15%"
@@ -132,7 +132,7 @@ export default function SmartDispatchPage() {
                 <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Planned Distance (km) *</label>
                 <input required type="number" min="1" value={form.plannedDistance} onChange={e => setForm({ ...form, plannedDistance: e.target.value })} placeholder="265" className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
               </div>
-              <button type="submit" disabled={loading} className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold text-white disabled:opacity-60" style={{ background: "#2563eb" }}>
+              <button type="submit" disabled={loading} className="btn btn-primary w-full" style={{ justifyContent: "center" }}>
                 {loading ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</> : <><Zap className="w-4 h-4" /> Run Smart Dispatch</>}
               </button>
             </form>
