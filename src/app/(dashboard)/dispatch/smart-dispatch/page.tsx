@@ -33,21 +33,23 @@ interface RecommendResult {
 
 function ScoreBar({ label, score, color, icon: Icon }: { label: string; score: number; color: string; icon: React.ElementType }) {
   return (
-    <div className="flex items-center gap-2">
-      <Icon className="w-3.5 h-3.5 flex-shrink-0" style={{ color }} />
-      <span className="text-xs w-28 flex-shrink-0" style={{ color: "#64748b" }}>{label}</span>
-      <div className="flex-1 h-1.5 rounded-full" style={{ background: "#f1f5f9" }}>
-        <div className="h-1.5 rounded-full transition-all" style={{ background: color, width: `${score}%` }} />
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <Icon style={{ width: 13, height: 13, flexShrink: 0, color }} />
+      <span style={{ fontSize: 11, color: "#71717A", width: 112, flexShrink: 0 }}>{label}</span>
+      <div style={{ flex: 1, height: 4, borderRadius: 100, background: "#F4F4F5", overflow: "hidden" }}>
+        <div style={{ height: "100%", borderRadius: 100, background: color, width: `${score}%`, transition: "width 0.5s ease" }} />
       </div>
-      <span className="text-xs font-semibold w-8 text-right" style={{ color }}>{score}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, width: 28, textAlign: "right", color, flexShrink: 0 }}>{score}</span>
     </div>
   );
 }
 
-const CONFIDENCE_COLOR = (c: number) => c >= 80 ? "#16a34a" : c >= 60 ? "#d97706" : "#dc2626";
+const CONFIDENCE_COLOR = (c: number) => c >= 80 ? "#059669" : c >= 60 ? "#D97706" : "#DC2626";
 const CONFIDENCE_LABEL = (c: number) => c >= 80 ? "High Confidence" : c >= 60 ? "Moderate" : "Low Confidence";
+const CONFIDENCE_BG = (c: number) => c >= 80 ? "#ECFDF5" : c >= 60 ? "#FFFBEB" : "#FEF2F2";
+const CONFIDENCE_BORDER = (c: number) => c >= 80 ? "#D1FAE5" : c >= 60 ? "#FDE68A" : "#FEE2E2";
 
-const LICENSE_COLOR: Record<string, string> = { VALID: "#16a34a", EXPIRING_SOON: "#d97706", EXPIRED: "#dc2626" };
+const LICENSE_COLOR: Record<string, string> = { VALID: "#059669", EXPIRING_SOON: "#D97706", EXPIRED: "#DC2626" };
 
 export default function SmartDispatchPage() {
   const router = useRouter();
@@ -102,61 +104,67 @@ export default function SmartDispatchPage() {
         breadcrumb="Dispatcher"
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-5">
+      <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20 }}>
         {/* ── Input Form ── */}
-        <div>
-          <div className="bg-white rounded-xl p-5 mb-4" style={{ border: "1px solid #e2e8f0" }}>
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#eff6ff" }}>
-                <Zap className="w-4 h-4" style={{ color: "#2563eb" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div className="card" style={{ padding: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <Zap style={{ width: 15, height: 15, color: "#2563EB" }} />
               </div>
-              <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Smart Dispatch Input</p>
+              <div>
+                <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>Smart Dispatch Input</p>
+                <p style={{ fontSize: 12, color: "#A1A1AA", marginTop: 1 }}>Enter cargo & distance details</p>
+              </div>
             </div>
-            <form onSubmit={runRecommendation} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={runRecommendation} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>From</label>
-                  <input value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} placeholder="Ahmedabad" className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A", marginBottom: 5 }}>From</label>
+                  <input value={form.source} onChange={e => setForm({ ...form, source: e.target.value })} placeholder="Ahmedabad" className="input-field" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>To</label>
-                  <input value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} placeholder="Surat" className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A", marginBottom: 5 }}>To</label>
+                  <input value={form.destination} onChange={e => setForm({ ...form, destination: e.target.value })} placeholder="Surat" className="input-field" />
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Cargo Weight (T) *</label>
-                <input required type="number" step="0.01" min="0.01" value={form.cargoWeight} onChange={e => setForm({ ...form, cargoWeight: e.target.value })} placeholder="0.45" className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
-                <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>e.g. 0.45 = 450 kg · 28 = 28 tonnes</p>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A", marginBottom: 5 }}>Cargo Weight (T) *</label>
+                <input required type="number" step="0.01" min="0.01" value={form.cargoWeight} onChange={e => setForm({ ...form, cargoWeight: e.target.value })} placeholder="0.45" className="input-field" />
+                <p style={{ fontSize: 11, marginTop: 4, color: "#A1A1AA" }}>e.g. 0.45 = 450 kg · 28 = 28 tonnes</p>
               </div>
               <div>
-                <label className="block text-xs font-medium mb-1" style={{ color: "#374151" }}>Planned Distance (km) *</label>
-                <input required type="number" min="1" value={form.plannedDistance} onChange={e => setForm({ ...form, plannedDistance: e.target.value })} placeholder="265" className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
+                <label style={{ display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A", marginBottom: 5 }}>Planned Distance (km) *</label>
+                <input required type="number" min="1" value={form.plannedDistance} onChange={e => setForm({ ...form, plannedDistance: e.target.value })} placeholder="265" className="input-field" />
               </div>
-              <button type="submit" disabled={loading} className="btn btn-primary w-full" style={{ justifyContent: "center" }}>
-                {loading ? <><div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Analyzing...</> : <><Zap className="w-4 h-4" /> Run Smart Dispatch</>}
+              <button type="submit" disabled={loading} className="btn btn-primary" style={{ justifyContent: "center", marginTop: 4 }}>
+                {loading
+                  ? <><div style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 0.75s linear infinite" }} /> Analyzing...</>
+                  : <><Zap style={{ width: 14, height: 14 }} /> Run Smart Dispatch</>
+                }
               </button>
             </form>
           </div>
 
           {/* Scoring legend */}
-          <div className="rounded-xl p-4 text-xs" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-            <p className="font-semibold mb-2" style={{ color: "#64748b" }}>SCORING WEIGHTS</p>
+          <div className="card" style={{ padding: "18px 20px" }}>
+            <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#A1A1AA", marginBottom: 12 }}>Scoring Weights</p>
             {[
-              { label: "Capacity Fit", weight: "35%", color: "#2563eb" },
-              { label: "Fuel Efficiency", weight: "30%", color: "#16a34a" },
-              { label: "Maintenance Reliability", weight: "20%", color: "#f59e0b" },
-              { label: "Availability", weight: "15%", color: "#8b5cf6" },
+              { label: "Capacity Fit", weight: "35%", color: "#2563EB" },
+              { label: "Fuel Efficiency", weight: "30%", color: "#10B981" },
+              { label: "Maintenance Reliability", weight: "20%", color: "#F59E0B" },
+              { label: "Availability", weight: "15%", color: "#8B5CF6" },
             ].map(i => (
-              <div key={i.label} className="flex items-center justify-between mb-1.5">
-                <div className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full" style={{ background: i.color }} />
-                  <span style={{ color: "#374151" }}>{i.label}</span>
+              <div key={i.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                  <div style={{ width: 7, height: 7, borderRadius: "50%", background: i.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: 12, color: "#3F3F46" }}>{i.label}</span>
                 </div>
-                <span className="font-semibold" style={{ color: i.color }}>{i.weight}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: i.color }}>{i.weight}</span>
               </div>
             ))}
-            <div className="border-t mt-2 pt-2" style={{ borderColor: "#e2e8f0" }}>
-              <p style={{ color: "#64748b" }}>Driver: Safety 50% · License 30% · Availability 20%</p>
+            <div style={{ borderTop: "1px solid #F4F4F5", marginTop: 8, paddingTop: 8 }}>
+              <p style={{ fontSize: 11, color: "#71717A" }}>Driver: Safety 50% · License 30% · Availability 20%</p>
             </div>
           </div>
         </div>
@@ -164,103 +172,112 @@ export default function SmartDispatchPage() {
         {/* ── Results ── */}
         <div>
           {!result && !loading && (
-            <div className="bg-white rounded-xl flex flex-col items-center justify-center py-20" style={{ border: "1px solid #e2e8f0" }}>
-              <Zap className="w-10 h-10 mb-3" style={{ color: "#e2e8f0" }} />
-              <p className="text-sm font-medium" style={{ color: "#94a3b8" }}>Enter cargo weight and distance to get recommendation</p>
+            <div className="card" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 24px" }}>
+              <div style={{ width: 48, height: 48, borderRadius: 14, background: "#F4F4F5", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12 }}>
+                <Zap style={{ width: 20, height: 20, color: "#D4D4D8" }} />
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 500, color: "#A1A1AA" }}>Enter cargo weight and distance to get a recommendation</p>
+              <p style={{ fontSize: 12, color: "#D4D4D8", marginTop: 4 }}>The engine will score all eligible vehicles and drivers</p>
             </div>
           )}
 
           {result && (
-            <div className="space-y-4">
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
               {/* Confidence + Use button */}
-              <div className="bg-white rounded-xl p-5 flex items-center justify-between" style={{ border: `1px solid ${CONFIDENCE_COLOR(result.recommended.confidence)}33` }}>
+              <div className="card" style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", background: CONFIDENCE_BG(result.recommended.confidence), border: `1px solid ${CONFIDENCE_BORDER(result.recommended.confidence)}` }}>
                 <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2.5 h-2.5 rounded-full" style={{ background: CONFIDENCE_COLOR(result.recommended.confidence) }} />
-                    <p className="text-sm font-semibold" style={{ color: CONFIDENCE_COLOR(result.recommended.confidence) }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: CONFIDENCE_COLOR(result.recommended.confidence) }} />
+                    <p style={{ fontSize: 14, fontWeight: 600, color: CONFIDENCE_COLOR(result.recommended.confidence) }}>
                       {CONFIDENCE_LABEL(result.recommended.confidence)} — {result.recommended.confidence}%
                     </p>
                   </div>
-                  <p className="text-xs" style={{ color: "#64748b" }}>
+                  <p style={{ fontSize: 12, color: "#71717A" }}>
                     Cargo: <strong>{result.inputs.cargoWeight}T</strong> · Distance: <strong>{result.inputs.plannedDistance} km</strong> · Fleet avg efficiency: <strong>{result.fleetAvgEfficiency} km/L</strong>
                   </p>
-                  <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>
+                  <p style={{ fontSize: 11, marginTop: 3, color: "#A1A1AA" }}>
                     {result.vehicles.length} eligible vehicle(s) · {result.drivers.length} eligible driver(s)
                   </p>
                 </div>
                 {result.recommended.vehicle && result.recommended.driver && (
-                  <button onClick={useRecommendation} className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white" style={{ background: "#16a34a" }}>
-                    Use Recommendation <ArrowRight className="w-4 h-4" />
+                  <button onClick={useRecommendation} className="btn btn-primary" style={{ background: "#059669", flexShrink: 0 }}>
+                    Use Recommendation <ArrowRight style={{ width: 14, height: 14 }} />
                   </button>
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                 {/* Recommended Vehicle */}
-                <div className="bg-white rounded-xl" style={{ border: "1px solid #e2e8f0" }}>
-                  <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: "12px 12px 0 0" }}>
-                    <Car className="w-4 h-4" style={{ color: "#2563eb" }} />
-                    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#64748b" }}>Top Ranked Vehicles</p>
+                <div className="card" style={{ overflow: "hidden" }}>
+                  <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid #F4F4F5", background: "#FAFAFA" }}>
+                    <Car style={{ width: 14, height: 14, color: "#2563EB" }} />
+                    <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A" }}>Top Ranked Vehicles</p>
                   </div>
-                  <div className="divide-y" style={{ borderColor: "#f8fafc" }}>
+                  <div>
                     {result.vehicles.map((v, i) => (
-                      <button key={v.id} onClick={() => setSelectedVehicle(v)} className="w-full px-4 py-3 text-left transition-colors hover:bg-blue-50" style={{ background: selectedVehicle?.id === v.id ? "#eff6ff" : "white" }}>
-                        <div className="flex items-start justify-between mb-2">
+                      <button key={v.id} onClick={() => setSelectedVehicle(v)} style={{
+                        width: "100%", padding: "14px 18px", textAlign: "left", background: selectedVehicle?.id === v.id ? "#EFF6FF" : "white",
+                        border: "none", borderBottom: "1px solid #F4F4F5", cursor: "pointer", transition: "background 0.1s ease",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", marginBottom: 10 }}>
                           <div>
-                            <div className="flex items-center gap-1.5">
-                              {i === 0 && <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: "#fef3c7", color: "#92400e" }}>★ Best</span>}
-                              <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>{v.name}</p>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                              {i === 0 && <span className="chip chip-amber" style={{ fontSize: 10, fontWeight: 600 }}>★ Best</span>}
+                              <p style={{ fontSize: 13, fontWeight: 600, color: "#18181B" }}>{v.name}</p>
                             </div>
-                            <p className="text-xs" style={{ color: "#94a3b8" }}>{v.registrationNumber} · {v.type} · {v.region}</p>
+                            <p style={{ fontSize: 11, color: "#A1A1AA" }}>{v.registrationNumber} · {v.type} · {v.region}</p>
                           </div>
-                          <span className="text-lg font-bold" style={{ color: "#2563eb" }}>{v.vehicleScore}</span>
+                          <span style={{ fontSize: 20, fontWeight: 700, color: "#2563EB", lineHeight: 1, flexShrink: 0 }}>{v.vehicleScore}</span>
                         </div>
-                        <div className="space-y-1.5">
-                          <ScoreBar label={`Capacity Fit (${v.capacityUtilization}%)`} score={v.capacityFit} color="#2563eb" icon={CheckCircle2} />
-                          <ScoreBar label={`Fuel (${v.fuelEfficiency ?? "N/A"} km/L)`} score={v.fuelScore} color="#16a34a" icon={Fuel} />
-                          <ScoreBar label="Maintenance" score={v.maintenanceScore} color="#f59e0b" icon={Wrench} />
-                          <ScoreBar label="Availability" score={v.availabilityScore} color="#8b5cf6" icon={TrendingUp} />
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          <ScoreBar label={`Capacity (${v.capacityUtilization}%)`} score={v.capacityFit} color="#2563EB" icon={CheckCircle2} />
+                          <ScoreBar label={`Fuel (${v.fuelEfficiency ?? "N/A"} km/L)`} score={v.fuelScore} color="#10B981" icon={Fuel} />
+                          <ScoreBar label="Maintenance" score={v.maintenanceScore} color="#F59E0B" icon={Wrench} />
+                          <ScoreBar label="Availability" score={v.availabilityScore} color="#8B5CF6" icon={TrendingUp} />
                         </div>
-                        <p className="text-xs mt-1.5" style={{ color: "#94a3b8" }}>Cap: {v.maximumLoadCapacity}T · Odo: {v.odometer.toLocaleString("en-IN")} km</p>
+                        <p style={{ fontSize: 11, marginTop: 8, color: "#A1A1AA" }}>Cap: {v.maximumLoadCapacity}T · Odo: {v.odometer.toLocaleString("en-IN")} km</p>
                       </button>
                     ))}
                     {result.vehicles.length === 0 && (
-                      <p className="px-4 py-6 text-sm text-center" style={{ color: "#94a3b8" }}>No eligible vehicles for this cargo weight</p>
+                      <p style={{ padding: "40px 18px", textAlign: "center", fontSize: 13, color: "#A1A1AA" }}>No eligible vehicles for this cargo weight</p>
                     )}
                   </div>
                 </div>
 
                 {/* Recommended Driver */}
-                <div className="bg-white rounded-xl" style={{ border: "1px solid #e2e8f0" }}>
-                  <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid #f1f5f9", background: "#f8fafc", borderRadius: "12px 12px 0 0" }}>
-                    <Users className="w-4 h-4" style={{ color: "#7c3aed" }} />
-                    <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#64748b" }}>Top Ranked Drivers</p>
+                <div className="card" style={{ overflow: "hidden" }}>
+                  <div style={{ padding: "14px 18px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid #F4F4F5", background: "#FAFAFA" }}>
+                    <Users style={{ width: 14, height: 14, color: "#7C3AED" }} />
+                    <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A" }}>Top Ranked Drivers</p>
                   </div>
-                  <div className="divide-y" style={{ borderColor: "#f8fafc" }}>
+                  <div>
                     {result.drivers.map((d, i) => (
-                      <button key={d.id} onClick={() => setSelectedDriver(d)} className="w-full px-4 py-3 text-left transition-colors hover:bg-purple-50" style={{ background: selectedDriver?.id === d.id ? "#faf5ff" : "white" }}>
-                        <div className="flex items-start justify-between mb-2">
+                      <button key={d.id} onClick={() => setSelectedDriver(d)} style={{
+                        width: "100%", padding: "14px 18px", textAlign: "left", background: selectedDriver?.id === d.id ? "#F5F3FF" : "white",
+                        border: "none", borderBottom: "1px solid #F4F4F5", cursor: "pointer", transition: "background 0.1s ease",
+                      }}>
+                        <div style={{ display: "flex", alignItems: "start", justifyContent: "space-between", marginBottom: 10 }}>
                           <div>
-                            <div className="flex items-center gap-1.5">
-                              {i === 0 && <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: "#fef3c7", color: "#92400e" }}>★ Best</span>}
-                              <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>{d.name}</p>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                              {i === 0 && <span className="chip chip-amber" style={{ fontSize: 10, fontWeight: 600 }}>★ Best</span>}
+                              <p style={{ fontSize: 13, fontWeight: 600, color: "#18181B" }}>{d.name}</p>
                             </div>
-                            <p className="text-xs" style={{ color: "#94a3b8" }}>{d.licenseCategory} · {d.licenseNumber}</p>
+                            <p style={{ fontSize: 11, color: "#A1A1AA" }}>{d.licenseCategory} · {d.licenseNumber}</p>
                           </div>
-                          <span className="text-lg font-bold" style={{ color: "#7c3aed" }}>{d.driverScore}</span>
+                          <span style={{ fontSize: 20, fontWeight: 700, color: "#7C3AED", lineHeight: 1, flexShrink: 0 }}>{d.driverScore}</span>
                         </div>
-                        <div className="space-y-1.5">
-                          <ScoreBar label={`Safety (${d.safetyScore}/100)`} score={d.safetyScore} color="#7c3aed" icon={CheckCircle2} />
-                          <ScoreBar label={`License (${d.licenseState})`} score={d.licenseScore} color={LICENSE_COLOR[d.licenseState] ?? "#94a3b8"} icon={CheckCircle2} />
-                          <ScoreBar label="Availability" score={100} color="#0891b2" icon={TrendingUp} />
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                          <ScoreBar label={`Safety (${d.safetyScore}/100)`} score={d.safetyScore} color="#7C3AED" icon={CheckCircle2} />
+                          <ScoreBar label={`License (${d.licenseState})`} score={d.licenseScore} color={LICENSE_COLOR[d.licenseState] ?? "#A1A1AA"} icon={CheckCircle2} />
+                          <ScoreBar label="Availability" score={100} color="#06B6D4" icon={TrendingUp} />
                         </div>
-                        <p className="text-xs mt-1.5" style={{ color: LICENSE_COLOR[d.licenseState] }}>
+                        <p style={{ fontSize: 11, marginTop: 8, color: LICENSE_COLOR[d.licenseState] ?? "#A1A1AA" }}>
                           {d.licenseState === "EXPIRING_SOON" ? `⚠ Expires in ${d.daysUntilExpiry} days` : `${d.daysUntilExpiry} days until expiry`}
                         </p>
                       </button>
                     ))}
                     {result.drivers.length === 0 && (
-                      <p className="px-4 py-6 text-sm text-center" style={{ color: "#94a3b8" }}>No eligible drivers available</p>
+                      <p style={{ padding: "40px 18px", textAlign: "center", fontSize: 13, color: "#A1A1AA" }}>No eligible drivers available</p>
                     )}
                   </div>
                 </div>
@@ -268,21 +285,21 @@ export default function SmartDispatchPage() {
 
               {/* Rejected */}
               {(result.rejectedVehicles.length > 0 || result.rejectedDrivers.length > 0) && (
-                <div className="bg-white rounded-xl" style={{ border: "1px solid #fecaca" }}>
-                  <div className="px-4 py-3 flex items-center gap-2" style={{ borderBottom: "1px solid #fef2f2", background: "#fff5f5", borderRadius: "12px 12px 0 0" }}>
-                    <XCircle className="w-4 h-4 text-red-500" />
-                    <p className="text-xs font-semibold uppercase tracking-wide text-red-700">Rejected — Eligibility Failures</p>
+                <div className="card" style={{ overflow: "hidden" }}>
+                  <div style={{ padding: "12px 18px", display: "flex", alignItems: "center", gap: 8, borderBottom: "1px solid #FEE2E2", background: "#FEF2F2" }}>
+                    <XCircle style={{ width: 14, height: 14, color: "#DC2626" }} />
+                    <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#DC2626" }}>Rejected — Eligibility Failures</p>
                   </div>
-                  <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div style={{ padding: "16px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                     {result.rejectedVehicles.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold mb-2" style={{ color: "#64748b" }}>Vehicles ({result.rejectedVehicles.length})</p>
+                        <p style={{ fontSize: 11, fontWeight: 600, color: "#71717A", marginBottom: 8 }}>Vehicles ({result.rejectedVehicles.length})</p>
                         {result.rejectedVehicles.map(v => (
-                          <div key={v.registrationNumber} className="flex items-start gap-2 mb-2">
-                            <AlertTriangle className="w-3.5 h-3.5 text-red-400 mt-0.5 flex-shrink-0" />
+                          <div key={v.registrationNumber} style={{ display: "flex", alignItems: "start", gap: 8, marginBottom: 8 }}>
+                            <AlertTriangle style={{ width: 13, height: 13, color: "#EF4444", flexShrink: 0, marginTop: 1 }} />
                             <div>
-                              <p className="text-xs font-medium" style={{ color: "#0f172a" }}>{v.name} <span style={{ color: "#94a3b8" }}>({v.registrationNumber})</span></p>
-                              <p className="text-xs" style={{ color: "#dc2626" }}>{v.reason}</p>
+                              <p style={{ fontSize: 12, fontWeight: 500, color: "#18181B" }}>{v.name} <span style={{ color: "#A1A1AA" }}>({v.registrationNumber})</span></p>
+                              <p style={{ fontSize: 11, color: "#DC2626" }}>{v.reason}</p>
                             </div>
                           </div>
                         ))}
@@ -290,13 +307,13 @@ export default function SmartDispatchPage() {
                     )}
                     {result.rejectedDrivers.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold mb-2" style={{ color: "#64748b" }}>Drivers ({result.rejectedDrivers.length})</p>
+                        <p style={{ fontSize: 11, fontWeight: 600, color: "#71717A", marginBottom: 8 }}>Drivers ({result.rejectedDrivers.length})</p>
                         {result.rejectedDrivers.map(d => (
-                          <div key={d.licenseNumber} className="flex items-start gap-2 mb-2">
-                            <AlertTriangle className="w-3.5 h-3.5 text-red-400 mt-0.5 flex-shrink-0" />
+                          <div key={d.licenseNumber} style={{ display: "flex", alignItems: "start", gap: 8, marginBottom: 8 }}>
+                            <AlertTriangle style={{ width: 13, height: 13, color: "#EF4444", flexShrink: 0, marginTop: 1 }} />
                             <div>
-                              <p className="text-xs font-medium" style={{ color: "#0f172a" }}>{d.name}</p>
-                              <p className="text-xs" style={{ color: "#dc2626" }}>{d.reason}</p>
+                              <p style={{ fontSize: 12, fontWeight: 500, color: "#18181B" }}>{d.name}</p>
+                              <p style={{ fontSize: 11, color: "#DC2626" }}>{d.reason}</p>
                             </div>
                           </div>
                         ))}
@@ -308,16 +325,16 @@ export default function SmartDispatchPage() {
 
               {/* Use recommendation CTA */}
               {vehicle && driver && (
-                <div className="rounded-xl p-4 flex items-center justify-between" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                <div className="card" style={{ padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#ECFDF5", border: "1px solid #D1FAE5" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <CheckCircle2 style={{ width: 18, height: 18, color: "#10B981", flexShrink: 0 }} />
                     <div>
-                      <p className="text-sm font-semibold text-green-800">Ready to Dispatch</p>
-                      <p className="text-xs text-green-700">{vehicle.name} with {driver.name} — Confidence {result.recommended.confidence}%</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "#065F46" }}>Ready to Dispatch</p>
+                      <p style={{ fontSize: 12, color: "#047857", marginTop: 2 }}>{vehicle.name} with {driver.name} — Confidence {result.recommended.confidence}%</p>
                     </div>
                   </div>
-                  <button onClick={useRecommendation} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white" style={{ background: "#16a34a" }}>
-                    Use Recommendation <ChevronRight className="w-4 h-4" />
+                  <button onClick={useRecommendation} className="btn btn-primary" style={{ background: "#059669", flexShrink: 0 }}>
+                    Use Recommendation <ChevronRight style={{ width: 14, height: 14 }} />
                   </button>
                 </div>
               )}

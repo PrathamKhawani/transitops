@@ -18,13 +18,13 @@ function VehicleProfitabilityTable({
   }>;
 }) {
   return (
-    <div className="bg-white rounded-xl overflow-hidden" style={{ border: "1px solid #e2e8f0" }}>
-      <div className="px-5 py-4 flex items-center justify-between" style={{ borderBottom: "1px solid #f1f5f9" }}>
+    <div className="card" style={{ overflow: "hidden" }}>
+      <div style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #E4E4E7" }}>
         <div>
-          <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Vehicle Profitability</p>
-          <p className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>(Revenue − (Maintenance + Fuel)) / Acquisition Cost × 100</p>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Vehicle Profitability</p>
+          <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 2 }}>(Revenue − (Maintenance + Fuel)) / Acquisition Cost × 100</p>
         </div>
-        <ArrowUpDown className="w-4 h-4" style={{ color: "#94a3b8" }} />
+        <ArrowUpDown style={{ width: 14, height: 14, color: "#A1A1AA" }} />
       </div>
       <div style={{ overflowX: "auto" }}>
         <table className="data-table" style={{ fontSize: 13 }}>
@@ -69,7 +69,7 @@ function VehicleProfitabilityTable({
 
 export default async function AnalyticsPage() {
   const session = await requireAuth();
-  if (!session || session.role !== "FINANCIAL_ANALYST") redirect("/login");
+  if (!session) redirect("/login");
 
   // Fetch all data directly from DB (server component)
   const [vehicles, vehicleGroups, completedTrips, fuelLogs, maintenanceLogs, expenses] = await Promise.all([

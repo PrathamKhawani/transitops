@@ -183,7 +183,7 @@ export default function TripsPage() {
         loading={loading}
         searchPlaceholder="Search trips..."
         filters={
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="text-xs border rounded-md px-2 py-1.5 outline-none" style={{ borderColor: "#e2e8f0", color: "#374151" }}>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="input-field" style={{ width: "auto", minWidth: 150 }}>
             {["", "DRAFT", "DISPATCHED", "COMPLETED", "CANCELLED"].map((s) => <option key={s} value={s}>{s || "All Status"}</option>)}
           </select>
         }

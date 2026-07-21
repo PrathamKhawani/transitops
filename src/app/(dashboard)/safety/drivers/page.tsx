@@ -19,16 +19,9 @@ const LICENSE_STATES = ["VALID", "EXPIRING_SOON", "EXPIRED"];
 const emptyForm = { name: "", licenseNumber: "", licenseCategory: "HMV", licenseExpiryDate: "", contactNumber: "", safetyScore: "100" };
 
 function LicenseBadge({ state }: { state: string }) {
-  const cfg = state === "VALID"
-    ? { bg: "#f0fdf4", color: "#16a34a", icon: <CheckCircle className="w-3 h-3" /> }
-    : state === "EXPIRING_SOON"
-    ? { bg: "#fffbeb", color: "#d97706", icon: <Clock className="w-3 h-3" /> }
-    : { bg: "#fef2f2", color: "#dc2626", icon: <AlertTriangle className="w-3 h-3" /> };
-  return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium" style={{ background: cfg.bg, color: cfg.color }}>
-      {cfg.icon} {state.replace("_", " ")}
-    </span>
-  );
+  if (state === "VALID") return <span className="chip chip-green"><CheckCircle style={{ width: 11, height: 11 }} /> Valid</span>;
+  if (state === "EXPIRING_SOON") return <span className="chip chip-amber"><Clock style={{ width: 11, height: 11 }} /> Expiring Soon</span>;
+  return <span className="chip chip-red"><AlertTriangle style={{ width: 11, height: 11 }} /> Expired</span>;
 }
 
 export default function DriversPage() {
@@ -92,8 +85,8 @@ export default function DriversPage() {
   const columns: Column<Record<string, unknown>>[] = [
     { key: "name", label: "Driver", sortable: true, render: (v, row) => (
       <div>
-        <p className="text-sm font-medium" style={{ color: "#0f172a" }}>{v as string}</p>
-        <p className="text-xs font-mono" style={{ color: "#94a3b8" }}>{row.licenseNumber as string}</p>
+        <p style={{ fontSize: 13, fontWeight: 600, color: "#09090B" }}>{v as string}</p>
+        <p style={{ fontSize: 11, color: "#A1A1AA", fontFamily: "monospace", marginTop: 1 }}>{row.licenseNumber as string}</p>
       </div>
     )},
     { key: "licenseCategory", label: "Category" },
@@ -101,8 +94,8 @@ export default function DriversPage() {
     { key: "licenseState", label: "License State", render: (v) => <LicenseBadge state={v as string} /> },
     { key: "safetyScore", label: "Safety Score", sortable: true, render: (v) => {
       const score = v as number;
-      const color = score >= 90 ? "#16a34a" : score >= 75 ? "#d97706" : "#dc2626";
-      return <span className="font-semibold" style={{ color }}>{score}</span>;
+      const color = score >= 90 ? "#059669" : score >= 75 ? "#D97706" : "#DC2626";
+      return <span style={{ fontWeight: 700, color }}>{score}/100</span>;
     }},
     { key: "contactNumber", label: "Contact" },
     { key: "status", label: "Status", render: (v) => <StatusBadge status={v as string} /> },
@@ -111,13 +104,15 @@ export default function DriversPage() {
       render: (_, row) => {
         const d = row as unknown as Driver;
         return (
-          <div className="flex gap-1 justify-end">
-            <button onClick={(e) => { e.stopPropagation(); router.push(`/safety/drivers/${d.id}`); }} className="p-1.5 rounded hover:bg-slate-50" title="Details"><ExternalLink className="w-3.5 h-3.5 text-slate-400" /></button>
-            <button onClick={(e) => { e.stopPropagation(); openEdit(d); }} className="p-1.5 rounded hover:bg-blue-50 text-xs font-medium" style={{ color: "#2563eb" }}>Edit</button>
+          <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }}>
+            <button onClick={(e) => { e.stopPropagation(); router.push(`/safety/drivers/${d.id}`); }} className="btn btn-ghost btn-sm" title="Details">
+              <ExternalLink style={{ width: 13, height: 13 }} /> Details
+            </button>
+            <button onClick={(e) => { e.stopPropagation(); openEdit(d); }} className="btn btn-ghost btn-sm" style={{ color: "#2563EB" }}>Edit</button>
             {d.status !== "ON_TRIP" && (
               d.status === "SUSPENDED"
-                ? <button onClick={(e) => { e.stopPropagation(); handleSuspend(d.id, false); }} className="p-1.5 rounded hover:bg-green-50 text-xs font-medium" style={{ color: "#16a34a" }}>Reinstate</button>
-                : <button onClick={(e) => { e.stopPropagation(); handleSuspend(d.id, true); }} className="p-1.5 rounded hover:bg-red-50 text-xs font-medium" style={{ color: "#dc2626" }}>Suspend</button>
+                ? <button onClick={(e) => { e.stopPropagation(); handleSuspend(d.id, false); }} className="btn btn-ghost btn-sm" style={{ color: "#059669" }}>Reinstate</button>
+                : <button onClick={(e) => { e.stopPropagation(); handleSuspend(d.id, true); }} className="btn btn-danger btn-sm">Suspend</button>
             )}
           </div>
         );
@@ -140,23 +135,23 @@ export default function DriversPage() {
 
       {/* Compliance Alerts */}
       {(expired > 0 || expiringSoon > 0 || suspended > 0) && (
-        <div className="flex gap-3 mb-5">
+        <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
           {expired > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
-              <AlertTriangle className="w-4 h-4 text-red-500" />
-              <p className="text-sm font-medium" style={{ color: "#dc2626" }}>{expired} Expired License{expired > 1 ? "s" : ""}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "#FEF2F2", border: "1px solid #FECACA" }}>
+              <AlertTriangle style={{ width: 14, height: 14, color: "#EF4444", flexShrink: 0 }} />
+              <p style={{ fontSize: 13, fontWeight: 500, color: "#DC2626" }}>{expired} Expired License{expired > 1 ? "s" : ""}</p>
             </div>
           )}
           {expiringSoon > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
-              <Clock className="w-4 h-4 text-yellow-500" />
-              <p className="text-sm font-medium" style={{ color: "#d97706" }}>{expiringSoon} Expiring Soon</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "#FFFBEB", border: "1px solid #FDE68A" }}>
+              <Clock style={{ width: 14, height: 14, color: "#F59E0B", flexShrink: 0 }} />
+              <p style={{ fontSize: 13, fontWeight: 500, color: "#D97706" }}>{expiringSoon} Expiring Soon</p>
             </div>
           )}
           {suspended > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2.5 rounded-lg" style={{ background: "#fff7ed", border: "1px solid #fed7aa" }}>
-              <AlertTriangle className="w-4 h-4 text-orange-500" />
-              <p className="text-sm font-medium" style={{ color: "#ea580c" }}>{suspended} Suspended</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 16px", borderRadius: 10, background: "#FFF7ED", border: "1px solid #FED7AA" }}>
+              <AlertTriangle style={{ width: 14, height: 14, color: "#F97316", flexShrink: 0 }} />
+              <p style={{ fontSize: 13, fontWeight: 500, color: "#EA580C" }}>{suspended} Suspended</p>
             </div>
           )}
         </div>

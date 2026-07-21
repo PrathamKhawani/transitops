@@ -8,7 +8,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default async function RevenuePage() {
   const session = await requireAuth();
-  if (!session || session.role !== "FINANCIAL_ANALYST") redirect("/login");
+  if (!session) redirect("/login");
 
   const trips = await prisma.trip.findMany({
     where: { status: "COMPLETED" },

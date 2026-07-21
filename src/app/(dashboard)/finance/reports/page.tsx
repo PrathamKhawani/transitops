@@ -50,116 +50,131 @@ export default function ReportsPage() {
     <div style={{ padding: "36px 44px" }}>
       <PageHeader title="Reports" description="Export real operational data as CSV for analysis" breadcrumb="Financial Analyst" />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-5">
+      <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20 }}>
         {/* Filters */}
-        <div className="bg-white rounded-xl p-5" style={{ border: "1px solid #e2e8f0" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Filter className="w-4 h-4" style={{ color: "#2563eb" }} />
-            <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Report Filters</p>
+        <div className="card" style={{ padding: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18 }}>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: "#EFF6FF", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <Filter style={{ width: 14, height: 14, color: "#2563EB" }} />
+            </div>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B", letterSpacing: "-0.01em" }}>Report Filters</p>
+              <p style={{ fontSize: 12, color: "#A1A1AA", marginTop: 1 }}>Narrow down your export</p>
+            </div>
           </div>
 
-          <div className="space-y-4">
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "#374151" }}>Report Type *</label>
-              <select value={reportType} onChange={e => setReportType(e.target.value)} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A", marginBottom: 5 }}>Report Type *</label>
+              <select value={reportType} onChange={e => setReportType(e.target.value)} className="input-field">
                 {REPORT_TYPES.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
               </select>
-              <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>{REPORT_TYPES.find(r => r.id === reportType)?.desc}</p>
+              <p style={{ fontSize: 11, marginTop: 4, color: "#A1A1AA" }}>{REPORT_TYPES.find(r => r.id === reportType)?.desc}</p>
             </div>
 
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "#374151" }}>Vehicle (optional)</label>
-              <select value={vehicleId} onChange={e => setVehicleId(e.target.value)} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A", marginBottom: 5 }}>Vehicle (optional)</label>
+              <select value={vehicleId} onChange={e => setVehicleId(e.target.value)} className="input-field">
                 <option value="">All Vehicles</option>
                 {vehicles.map(v => <option key={v.id} value={v.id}>{v.name} ({v.registrationNumber})</option>)}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-medium mb-1.5" style={{ color: "#374151" }}>Region (optional)</label>
-              <select value={region} onChange={e => setRegion(e.target.value)} className="w-full px-3 py-2 text-sm border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A", marginBottom: 5 }}>Region (optional)</label>
+              <select value={region} onChange={e => setRegion(e.target.value)} className="input-field">
                 {REGIONS.map(r => <option key={r} value={r}>{r || "All Regions"}</option>)}
               </select>
             </div>
 
             <div>
-              <label className="block text-xs font-medium mb-1.5 flex items-center gap-1" style={{ color: "#374151" }}>
-                <Calendar className="w-3.5 h-3.5" /> Date Range (optional)
+              <label style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#71717A", marginBottom: 5 }}>
+                <Calendar style={{ width: 12, height: 12 }} /> Date Range (optional)
               </label>
-              <div className="grid grid-cols-2 gap-2">
-                <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-full px-2 py-2 text-xs border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
-                <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-full px-2 py-2 text-xs border rounded-lg outline-none focus:ring-2 focus:ring-blue-500" style={{ borderColor: "#e2e8f0" }} />
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="input-field" style={{ fontSize: 12 }} />
+                <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="input-field" style={{ fontSize: 12 }} />
               </div>
             </div>
 
-            <button onClick={handleDownload} disabled={downloading} className="btn btn-primary w-full" style={{ justifyContent: "center" }}>
-              <Download className="w-4 h-4" />
+            <button onClick={handleDownload} disabled={downloading} className="btn btn-primary" style={{ justifyContent: "center", marginTop: 4 }}>
+              <Download style={{ width: 14, height: 14 }} />
               {downloading ? "Preparing CSV..." : "Download CSV"}
             </button>
           </div>
         </div>
 
-        {/* Report Preview */}
-        <div className="bg-white rounded-xl" style={{ border: "1px solid #e2e8f0" }}>
-          <div className="px-5 py-4" style={{ borderBottom: "1px solid #f1f5f9" }}>
-            <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>Available Reports</p>
-          </div>
-          <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {REPORT_TYPES.map(r => (
-              <button key={r.id} onClick={() => setReportType(r.id)} className="text-left p-4 rounded-xl border transition-all" style={{ borderColor: reportType === r.id ? "#2563eb" : "#e2e8f0", background: reportType === r.id ? "#eff6ff" : "white" }}>
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: reportType === r.id ? "#dbeafe" : "#f8fafc" }}>
-                    <FileText className="w-4 h-4" style={{ color: reportType === r.id ? "#2563eb" : "#94a3b8" }} />
+        {/* Right Panel */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Report type selector cards */}
+          <div className="card" style={{ overflow: "hidden" }}>
+            <div style={{ padding: "14px 18px", borderBottom: "1px solid #F4F4F5" }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: "#18181B" }}>Available Reports</p>
+            </div>
+            <div style={{ padding: "16px 18px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {REPORT_TYPES.map(r => (
+                <button
+                  key={r.id}
+                  onClick={() => setReportType(r.id)}
+                  style={{
+                    textAlign: "left", padding: "14px 16px", borderRadius: 10,
+                    border: `1px solid ${reportType === r.id ? "#2563EB" : "#E4E4E7"}`,
+                    background: reportType === r.id ? "#EFF6FF" : "#FAFAFA",
+                    cursor: "pointer", transition: "all 0.15s ease",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "start", gap: 10 }}>
+                    <div style={{ width: 34, height: 34, borderRadius: 8, background: reportType === r.id ? "#DBEAFE" : "#F4F4F5", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <FileText style={{ width: 15, height: 15, color: reportType === r.id ? "#2563EB" : "#A1A1AA" }} />
+                    </div>
+                    <div>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: "#18181B", marginBottom: 2 }}>{r.label}</p>
+                      <p style={{ fontSize: 11, color: "#71717A", lineHeight: 1.4 }}>{r.desc}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-semibold" style={{ color: "#0f172a" }}>{r.label}</p>
-                    <p className="text-xs mt-0.5" style={{ color: "#64748b" }}>{r.desc}</p>
-                  </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              ))}
+            </div>
           </div>
 
-          <div className="px-5 pb-5">
-            <div className="rounded-xl p-4" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-              <div className="flex items-center gap-2 mb-3">
-                <Truck className="w-4 h-4" style={{ color: "#64748b" }} />
-                <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: "#64748b" }}>Report Details</p>
-              </div>
-              {reportType === "fleet" && (
-                <div className="text-xs space-y-1" style={{ color: "#374151" }}>
-                  <p>• Vehicle, Registration, Type, Region, Status</p>
-                  <p>• Odometer reading, Trips completed</p>
-                  <p>• Total distance (km), Total revenue (₹)</p>
-                  <p>• Acquisition cost (₹)</p>
-                  <p className="mt-2" style={{ color: "#94a3b8" }}>Filters: Vehicle, Region, Date Range (completion date)</p>
-                </div>
-              )}
-              {reportType === "fuel" && (
-                <div className="text-xs space-y-1" style={{ color: "#374151" }}>
-                  <p>• Date, Vehicle, Registration, Region</p>
-                  <p>• Trip code, Litres, Cost (₹)</p>
-                  <p>• Odometer reading, Fuel efficiency (km/L)</p>
-                  <p className="mt-2" style={{ color: "#94a3b8" }}>Filters: Vehicle, Date Range</p>
-                </div>
-              )}
-              {reportType === "cost" && (
-                <div className="text-xs space-y-1" style={{ color: "#374151" }}>
-                  <p>• Vehicle, Registration, Type, Region</p>
-                  <p>• Fuel cost, Maintenance cost, Other expenses</p>
-                  <p>• Total operational cost (₹)</p>
-                  <p className="mt-2" style={{ color: "#94a3b8" }}>Filters: Vehicle, Region, Date Range</p>
-                </div>
-              )}
-              {reportType === "roi" && (
-                <div className="text-xs space-y-1" style={{ color: "#374151" }}>
-                  <p>• Vehicle, Registration, Type, Region</p>
-                  <p>• Acquisition cost, Revenue, Maintenance, Fuel</p>
-                  <p>• Net Contribution (₹), ROI (%)</p>
-                  <p className="mt-2" style={{ color: "#94a3b8" }}>ROI = (Revenue − Maintenance − Fuel) / Acq. Cost × 100</p>
-                </div>
-              )}
+          {/* Report details */}
+          <div className="card" style={{ padding: "18px 20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+              <Truck style={{ width: 14, height: 14, color: "#71717A" }} />
+              <p style={{ fontSize: 11, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em", color: "#A1A1AA" }}>Report Details</p>
             </div>
+            {reportType === "fleet" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {["Vehicle, Registration, Type, Region, Status", "Odometer reading, Trips completed", "Total distance (km), Total revenue (₹)", "Acquisition cost (₹)"].map(s => (
+                  <p key={s} style={{ fontSize: 12, color: "#3F3F46" }}>• {s}</p>
+                ))}
+                <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 4 }}>Filters: Vehicle, Region, Date Range (completion date)</p>
+              </div>
+            )}
+            {reportType === "fuel" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {["Date, Vehicle, Registration, Region", "Trip code, Litres, Cost (₹)", "Odometer reading, Fuel efficiency (km/L)"].map(s => (
+                  <p key={s} style={{ fontSize: 12, color: "#3F3F46" }}>• {s}</p>
+                ))}
+                <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 4 }}>Filters: Vehicle, Date Range</p>
+              </div>
+            )}
+            {reportType === "cost" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {["Vehicle, Registration, Type, Region", "Fuel cost, Maintenance cost, Other expenses", "Total operational cost (₹)"].map(s => (
+                  <p key={s} style={{ fontSize: 12, color: "#3F3F46" }}>• {s}</p>
+                ))}
+                <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 4 }}>Filters: Vehicle, Region, Date Range</p>
+              </div>
+            )}
+            {reportType === "roi" && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {["Vehicle, Registration, Type, Region", "Acquisition cost, Revenue, Maintenance, Fuel", "Net Contribution (₹), ROI (%)"].map(s => (
+                  <p key={s} style={{ fontSize: 12, color: "#3F3F46" }}>• {s}</p>
+                ))}
+                <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 4 }}>ROI = (Revenue − Maintenance − Fuel) / Acq. Cost × 100</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

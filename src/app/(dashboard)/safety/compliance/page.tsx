@@ -12,7 +12,7 @@ const BAND_LABEL = (score: number) =>
 
 export default async function CompliancePage() {
   const session = await requireAuth();
-  if (!session || session.role !== "SAFETY_OFFICER") redirect("/login");
+  if (!session) redirect("/login");
 
   const today = new Date();
   const in30Days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);

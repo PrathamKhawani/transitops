@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { AlertCircle, CheckCircle, AlertTriangle, ShieldAlert, ArrowRight } from "lucide-react";
 
 export type AlertSeverity = "CRITICAL" | "WARNING" | "INFO";
@@ -249,11 +250,11 @@ export function OperationsControlCenter({ alerts }: { alerts: OpsAlert[] }) {
                     {alert.entity}
                   </span>
                   {alert.href && (
-                    <a
+                    <Link
                       href={alert.href}
                       style={{
                         fontSize: 11,
-                        fontWeight: 500,
+                        fontWeight: 600,
                         color: "#3B82F6",
                         display: "flex",
                         alignItems: "center",
@@ -261,11 +262,16 @@ export function OperationsControlCenter({ alerts }: { alerts: OpsAlert[] }) {
                         textDecoration: "none",
                         flexShrink: 0,
                         marginLeft: 8,
+                        padding: "3px 8px",
+                        borderRadius: 6,
+                        background: "#EFF6FF",
+                        border: "1px solid #BFDBFE",
+                        transition: "background 0.15s ease",
                       }}
                     >
                       Take Action
                       <ArrowRight style={{ width: 11, height: 11 }} />
-                    </a>
+                    </Link>
                   )}
                 </div>
               </div>
