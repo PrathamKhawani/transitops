@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Eye, EyeOff, Truck, LogIn, UserPlus, ArrowRight, CheckCircle2 } from "lucide-react";
+import { Eye, EyeOff, Truck, LogIn, UserPlus, ArrowRight, CheckCircle2, Car, Zap, ShieldCheck, BarChart3 } from "lucide-react";
 
 const FEATURES = [
-  { icon: "🚌", title: "Real-time Fleet Management", desc: "Track every vehicle across your entire fleet instantly" },
-  { icon: "⚡", title: "Smart Dispatch & Routing",  desc: "AI-powered trip assignment and optimization" },
-  { icon: "🛡",  title: "Safety & Compliance",       desc: "Automated license tracking and violation alerts" },
-  { icon: "📊", title: "Financial Intelligence",     desc: "Revenue, cost and ROI analytics in one view" },
+  { icon: <Car style={{ width: 16, height: 16, color: "#60A5FA" }} />, title: "Real-time Fleet Management", desc: "Track every vehicle across your entire fleet instantly" },
+  { icon: <Zap style={{ width: 16, height: 16, color: "#F59E0B" }} />, title: "Smart Dispatch & Routing",  desc: "AI-powered trip assignment and optimization" },
+  { icon: <ShieldCheck style={{ width: 16, height: 16, color: "#10B981" }} />, title: "Safety & Compliance", desc: "Automated license tracking and violation alerts" },
+  { icon: <BarChart3 style={{ width: 16, height: 16, color: "#A855F7" }} />, title: "Financial Intelligence", desc: "Revenue, cost and ROI analytics in one view" },
 ];
 
 export default function LoginPage() {
@@ -173,7 +173,7 @@ export default function LoginPage() {
             }}
           >
             Fleet Intelligence<br />
-            <span style={{ color: "#3B82F6" }}>at Your Fingertips</span>
+            <span style={{ color: "#FFFFFF", opacity: 0.9 }}>at Your Fingertips</span>
           </h1>
           <p
             style={{
