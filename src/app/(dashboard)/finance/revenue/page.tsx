@@ -8,7 +8,7 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 
 export default async function RevenuePage() {
   const session = await requireAuth();
-  if (!session) redirect("/login");
+  if (!session || session.role !== "FINANCIAL_ANALYST") redirect("/login");
 
   const trips = await prisma.trip.findMany({
     where: { status: "COMPLETED" },
@@ -19,20 +19,20 @@ export default async function RevenuePage() {
     },
   });
 
-  const totalRevenue = trips.reduce((s, t) => s + t.revenue, 0);
+  const totalRevenue = trips.reduce((s, t) => s + (t.revenue || 0), 0);
   const avgRevenue = trips.length > 0 ? totalRevenue / trips.length : 0;
-  const maxRevenue = trips.length > 0 ? Math.max(...trips.map(t => t.revenue)) : 0;
+  const maxRevenue = trips.length > 0 ? Math.max(...trips.map(t => t.revenue || 0)) : 0;
 
   const columns = [
-    { key: "tripCode", label: "Trip Code", render: (v: unknown) => <span className="font-mono text-xs" style={{ color: "#475569" }}>{v as string}</span> },
-    { key: "source", label: "Route", render: (_: unknown, row: Record<string, unknown>) => `${row.source} → ${row.destination}` },
-    { key: "vehicle", label: "Vehicle", render: (v: unknown) => (v as {name:string}).name },
-    { key: "driver", label: "Driver", render: (v: unknown) => (v as {name:string}).name },
-    { key: "cargoWeight", label: "Cargo", render: (v: unknown) => `${v}T` },
-    { key: "actualDistance", label: "Distance", render: (v: unknown) => v ? `${v} km` : "—" },
-    { key: "fuelConsumed", label: "Fuel", render: (v: unknown) => v ? `${v}L` : "—" },
-    { key: "revenue", label: "Revenue", sortable: true, render: (v: unknown) => <span className="font-semibold" style={{ color: "#16a34a" }}>{formatCurrency(v as number)}</span> },
-    { key: "completedAt", label: "Completed", render: (v: unknown) => formatDate(v as string) },
+    { key: "tripCode", label: "Trip Code", sortable: true, render: (v: unknown) => <span className="font-mono text-xs" style={{ color: "#475569" }}>{String(v ?? "—")}</span> },
+    { key: "source", label: "Route", render: (_: unknown, row: Record<string, unknown>) => `${row.source ?? "—"} → ${row.destination ?? "—"}` },
+    { key: "vehicle", label: "Vehicle", render: (v: unknown) => (v as { name?: string })?.name ?? "—" },
+    { key: "driver", label: "Driver", render: (v: unknown) => (v as { name?: string })?.name ?? "—" },
+    { key: "cargoWeight", label: "Cargo", sortable: true, render: (v: unknown) => v != null ? `${v}T` : "—" },
+    { key: "actualDistance", label: "Distance", sortable: true, render: (v: unknown) => v != null ? `${v} km` : "—" },
+    { key: "fuelConsumed", label: "Fuel", sortable: true, render: (v: unknown) => v != null ? `${v}L` : "—" },
+    { key: "revenue", label: "Revenue", sortable: true, render: (v: unknown) => <span className="font-semibold" style={{ color: "#16a34a" }}>{formatCurrency((v as number) ?? 0)}</span> },
+    { key: "completedAt", label: "Completed", sortable: true, render: (v: unknown) => formatDate(v as string) },
   ];
 
   return (
@@ -57,7 +57,12 @@ export default async function RevenuePage() {
         </div>
       </div>
 
-      <DataTable columns={columns} data={trips as unknown as Record<string, unknown>[]} searchPlaceholder="Search trips..." />
+      <DataTable
+        columns={columns}
+        data={trips as unknown as Record<string, unknown>[]}
+        searchPlaceholder="Search by trip code, source, or destination..."
+        searchKeys={["tripCode", "source", "destination"]}
+      />
     </div>
   );
 }

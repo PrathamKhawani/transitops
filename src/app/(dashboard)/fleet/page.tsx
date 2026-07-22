@@ -522,7 +522,7 @@ export default async function FleetDashboard(
                             whiteSpace: "nowrap",
                           }}
                         >
-                          {trip.vehicle.name} · {trip.driver.name}
+                          {trip.vehicle?.name ?? "—"} · {trip.driver?.name ?? "—"}
                         </p>
                       </div>
                       <div style={{ textAlign: "right", flexShrink: 0 }}>

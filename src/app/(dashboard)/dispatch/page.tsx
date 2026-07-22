@@ -209,8 +209,8 @@ export default async function DispatchDashboard() {
                         </p>
                       </td>
                       <td className="td-cell">
-                        <p style={{ fontSize: 13, color: "#3F3F46" }}>{trip.vehicle.name}</p>
-                        <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 2 }}>{trip.vehicle.registrationNumber}</p>
+                        <p style={{ fontSize: 13, color: "#3F3F46" }}>{trip.vehicle?.name ?? "—"}</p>
+                        <p style={{ fontSize: 11, color: "#A1A1AA", marginTop: 2 }}>{trip.vehicle?.registrationNumber ?? "—"}</p>
                       </td>
                       <td className="td-cell">
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -229,9 +229,9 @@ export default async function DispatchDashboard() {
                               flexShrink: 0,
                             }}
                           >
-                            {trip.driver.name.charAt(0)}
+                            {trip.driver?.name?.charAt(0) ?? "—"}
                           </div>
-                          <span style={{ fontSize: 13, color: "#3F3F46" }}>{trip.driver.name}</span>
+                          <span style={{ fontSize: 13, color: "#3F3F46" }}>{trip.driver?.name ?? "—"}</span>
                         </div>
                       </td>
                       <td className="td-cell">
